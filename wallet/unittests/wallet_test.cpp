@@ -118,7 +118,7 @@ namespace
         beam::Amount coin_amount = 40;
         Coin coin = CreateAvailCoin(coin_amount, 0);
         coin.m_ID.m_Type = Key::Type::Coinbase;
-        senderWalletDB->store(coin);
+        senderWalletDB->storeCoin(coin);
 
         auto coins = senderWalletDB->selectCoins(24);
         WALLET_CHECK(coins.size() == 1);
@@ -148,7 +148,7 @@ namespace
 
         // check coins
         vector<Coin> newSenderCoins;
-        senderWalletDB->visit([&newSenderCoins](const Coin& c)->bool
+        senderWalletDB->visitCoins([&newSenderCoins](const Coin& c)->bool
         {
             newSenderCoins.push_back(c);
             return true;
@@ -251,6 +251,38 @@ namespace
         WALLET_CHECK(stx->m_status == rtx->m_status);
         WALLET_CHECK(stx->m_sender == true);
         WALLET_CHECK(rtx->m_sender == false);
+
+        // rollback test
+        {
+
+            Block::SystemState::Full sTip;
+            receiver.m_WalletDB->get_History().get_Tip(sTip);
+
+            receiver.m_WalletDB->get_History().DeleteFrom(sTip.m_Height); // delete latest block
+
+            proto::FlyClient& flyClient = receiver.m_Wallet;
+            //imitate rollback
+            flyClient.OnRolledBack();
+            receiver.m_WalletDB->get_History().AddStates(&sTip, 1);
+            flyClient.OnNewTip();
+            completedCount = 1; // sender's transaction is completed
+            mainReactor->run();
+
+            newReceiverCoins = receiver.GetCoins();
+
+            WALLET_CHECK(newReceiverCoins[0].m_ID.m_Value == 4);
+            WALLET_CHECK(newReceiverCoins[0].m_status == Coin::Available);
+            WALLET_CHECK(newReceiverCoins[0].m_ID.m_Type == Key::Type::Regular);
+
+            // Tx history check
+            rh = receiver.m_WalletDB->getTxHistory();
+            WALLET_CHECK(rh.size() == 1);
+            rtx = receiver.m_WalletDB->getTx(txId);
+            WALLET_CHECK(rtx.is_initialized());
+
+            WALLET_CHECK(rtx->m_status == TxStatus::Completed);
+            WALLET_CHECK(rtx->m_sender == false);
+        }
 
         // second transfer
         auto preselectedCoins = sender.m_WalletDB->selectCoins(6);
@@ -545,7 +577,7 @@ namespace
         beam::Amount coin_amount = 40;
         Coin coin = CreateAvailCoin(coin_amount, 0);
         coin.m_ID.m_Type = Key::Type::Coinbase;
-        senderWalletDB->store(coin);
+        senderWalletDB->storeCoin(coin);
 
         auto coins = senderWalletDB->selectCoins(24);
         WALLET_CHECK(coins.size() == 1);
@@ -575,7 +607,7 @@ namespace
 
         // check coins
         vector<Coin> newSenderCoins;
-        senderWalletDB->visit([&newSenderCoins](const Coin& c)->bool
+        senderWalletDB->visitCoins([&newSenderCoins](const Coin& c)->bool
         {
             newSenderCoins.push_back(c);
             return true;
@@ -873,6 +905,16 @@ namespace
         {
             cout << "Transferring of " << t.GetTxCount() << " by " << t.GetTxPerCall() << " transactions per call took: " << t.GetTotalTime() << " ms Max api latency: " << t.GetMaxLatency() << endl;
         }
+    }
+
+    void TestTxNonces()
+    {
+        cout << "\nTesting tx nonce...\n";
+
+        PerformanceRig t2(200);
+        t2.Run();
+        t2.Run();
+
     }
 
     void TestColdWalletSending()
@@ -1461,6 +1503,7 @@ int main()
 
     TestTransactionUpdate();
     //TestTxPerformance();
+    //TestTxNonces();
 
     TestColdWalletSending();
     TestColdWalletReceiving();

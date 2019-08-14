@@ -445,7 +445,7 @@ namespace
     int ChangeAddressExpiration(const po::variables_map& vm, const IWalletDB::Ptr& walletDB)
     {
         string address = vm[cli::WALLET_ADDR].as<string>();
-        string newTime = vm[cli::EXPIRATION_TIME].as<string>();
+        string expiration = vm[cli::EXPIRATION_TIME].as<string>();
         WalletID walletID(Zero);
         bool allAddresses = address == "*";
 
@@ -453,53 +453,81 @@ namespace
         {
             walletID.FromHex(address);
         }
-        uint64_t newDuration_s = 0;
-        if (newTime == "24h")
+
+        WalletAddress::ExpirationStatus expirationStatus;
+        if (expiration == cli::EXPIRATION_TIME_24H)
         {
-            newDuration_s = 24 * 3600; //seconds
+            expirationStatus = WalletAddress::ExpirationStatus::OneDay;
         }
-        else if (newTime == "never")
+        else if (expiration == cli::EXPIRATION_TIME_NEVER)
         {
-            newDuration_s = 0;
+            expirationStatus = WalletAddress::ExpirationStatus::Never;
+        }
+        else if (expiration == cli::EXPIRATION_TIME_NOW)
+        {
+            expirationStatus = WalletAddress::ExpirationStatus::Expired;
         }
         else
         {
-            LOG_ERROR() << "Invalid address expiration time \"" << newTime << "\".";
+            LOG_ERROR() << "Operation failed: provided \"" << cli::EXPIRATION_TIME << "\" parameter value \"" << expiration << "\" is not valid";
             return -1;
         }
 
-        if (storage::changeAddressExpiration(*walletDB, walletID, newDuration_s))
+        if (storage::changeAddressExpiration(*walletDB, walletID, expirationStatus))
         {
             if (allAddresses)
             {
-                LOG_INFO() << "Expiration for all addresses  was changed to \"" << newTime << "\".";
+                LOG_INFO() << "Expiration for all addresses  was changed to \"" << expiration << "\".";
             }
             else
             {
-                LOG_INFO() << "Expiration for address " << to_string(walletID) << " was changed to \"" << newTime << "\".";
+                LOG_INFO() << "Expiration for address " << to_string(walletID) << " was changed to \"" << expiration << "\".";
             }
             return 0;
         }
         return -1;
     }
 
-    WalletAddress CreateNewAddress(const IWalletDB::Ptr& walletDB, const std::string& comment, bool isNever = false)
+    WalletAddress GenerateNewAddress(
+        const IWalletDB::Ptr& walletDB,
+        const std::string& label,
+        WalletAddress::ExpirationStatus expirationStatus = WalletAddress::ExpirationStatus::OneDay)
     {
         WalletAddress address = storage::createAddress(*walletDB);
 
-        if (isNever)
-        {
-            address.m_duration = 0;
-        }
-
-        address.m_label = comment;
+        address.setExpiration(expirationStatus);
+        address.m_label = label;
         walletDB->saveAddress(address);
 
         LOG_INFO() << "New address generated:\n\n" << std::to_string(address.m_walletID) << "\n";
-        if (!comment.empty()) {
-            LOG_INFO() << "comment = " << comment;
+        if (!label.empty()) {
+            LOG_INFO() << "label = " << label;
         }
         return address;
+    }
+
+    int CreateNewAddress(const po::variables_map& vm, const IWalletDB::Ptr& walletDB)
+    {
+        auto comment = vm[cli::NEW_ADDRESS_COMMENT].as<string>();
+        auto expiration = vm[cli::EXPIRATION_TIME].as<string>();
+
+        WalletAddress::ExpirationStatus expirationStatus;
+        if (expiration == cli::EXPIRATION_TIME_24H)
+        {
+            expirationStatus = WalletAddress::ExpirationStatus::OneDay;
+        }
+        else if (expiration == cli::EXPIRATION_TIME_NEVER)
+        {
+            expirationStatus = WalletAddress::ExpirationStatus::Never;
+        }
+        else
+        {
+            LOG_ERROR() << "Operation failed: provided \"" << cli::EXPIRATION_TIME << "\" parameter value \"" << expiration << "\" is not valid";
+            return -1;
+        }
+        
+        GenerateNewAddress(walletDB, comment, expirationStatus);
+        return 0;
     }
 
     WordList GeneratePhrase()
@@ -690,7 +718,7 @@ namespace
             << setw(columnWidths[5]) << " type" << endl;
 
         
-        walletDB->visit([&columnWidths](const Coin& c)->bool
+        walletDB->visitCoins([&columnWidths](const Coin& c)->bool
         {
             cout << "   "
                 << " " << left << setw(columnWidths[0]) << c.toStringID()
@@ -934,7 +962,7 @@ namespace
         fee = vm[cli::FEE].as<Nonnegative<Amount>>().value;
         if (checkFee && fee < cli::kMinimumFee)
         {
-            LOG_ERROR() << "Failed to initiate the send operation. The minimum fee is 100 groth.";
+            LOG_ERROR() << "Failed to initiate the send operation. The minimum fee is 100 GROTH.";
             return false;
         }
 
@@ -989,16 +1017,6 @@ namespace
 
             btcOptions.m_feeRate = vm[cli::SWAP_FEERATE].as<Positive<Amount>>().value;
 
-            if (vm.count(cli::BTC_CONFIRMATIONS) > 0)
-            {
-                btcOptions.m_confirmations = vm[cli::BTC_CONFIRMATIONS].as<Positive<uint16_t>>().value;
-            }
-
-            if (vm.count(cli::BTC_LOCK_TIME) > 0)
-            {
-                btcOptions.m_lockTimeInBlocks = vm[cli::BTC_LOCK_TIME].as<Positive<uint32_t>>().value;
-            }
-
             auto swapSecondSideChainType = ParseSwapSecondSideChainType(vm);
             if (swapSecondSideChainType != SwapSecondSideChainType::Unknown)
             {
@@ -1044,16 +1062,6 @@ namespace
             }
             ltcOptions.m_feeRate = vm[cli::SWAP_FEERATE].as<Positive<Amount>>().value;
 
-            if (vm.count(cli::LTC_CONFIRMATIONS) > 0)
-            {
-                ltcOptions.m_confirmations = vm[cli::LTC_CONFIRMATIONS].as<Positive<uint16_t>>().value;
-            }
-
-            if (vm.count(cli::LTC_LOCK_TIME) > 0)
-            {
-                ltcOptions.m_lockTimeInBlocks = vm[cli::LTC_LOCK_TIME].as<Positive<uint32_t>>().value;
-            }
-
             auto swapSecondSideChainType = ParseSwapSecondSideChainType(vm);
             if (swapSecondSideChainType != SwapSecondSideChainType::Unknown)
             {
@@ -1098,16 +1106,6 @@ namespace
                 throw std::runtime_error("swap fee rate is missing");
             }
             qtumOptions.m_feeRate = vm[cli::SWAP_FEERATE].as<Positive<Amount>>().value;
-
-            if (vm.count(cli::QTUM_CONFIRMATIONS) > 0)
-            {
-                qtumOptions.m_confirmations = vm[cli::QTUM_CONFIRMATIONS].as<Positive<uint16_t>>().value;
-            }
-
-            if (vm.count(cli::QTUM_LOCK_TIME) > 0)
-            {
-                qtumOptions.m_lockTimeInBlocks = vm[cli::QTUM_LOCK_TIME].as<Positive<uint32_t>>().value;
-            }
 
             auto swapSecondSideChainType = ParseSwapSecondSideChainType(vm);
             if (swapSecondSideChainType != SwapSecondSideChainType::Unknown)
@@ -1265,8 +1263,7 @@ int main_impl(int argc, char* argv[])
 
                     if (coldWallet && command == cli::RESTORE)
                     {
-                        LOG_ERROR() << "You can't restore cold wallet.";
-                        return -1;
+                        LOG_INFO() << "Restoring cold wallet. You have to replace generated 'wallet.db' with your existing 'wallet.db' file.";
                     }
 
                     assert(vm.count(cli::WALLET_STORAGE) > 0);
@@ -1279,8 +1276,22 @@ int main_impl(int argc, char* argv[])
                     }
                     else if (WalletDB::isInitialized(walletPath) && (command == cli::INIT || command == cli::RESTORE))
                     {
-                        LOG_ERROR() << "Your wallet is already initialized.";
-                        return -1;
+                        bool isDirectory;
+                        #ifdef WIN32
+                                isDirectory = boost::filesystem::is_directory(Utf8toUtf16(walletPath.c_str()));
+                        #else
+                                isDirectory = boost::filesystem::is_directory(walletPath);
+                        #endif
+
+                        if (isDirectory)
+                        {
+                            walletPath.append("/wallet.db");
+                        }
+                        else
+                        {
+                            LOG_ERROR() << "Your wallet is already initialized.";
+                            return -1;
+                        }                  
                     }
 
                     LOG_INFO() << "starting a wallet...";
@@ -1314,10 +1325,7 @@ int main_impl(int argc, char* argv[])
                         if (walletDB)
                         {
                             LOG_INFO() << "wallet successfully created...";
-
-                            // generate default address
-                            CreateNewAddress(walletDB, "default");
-
+                            GenerateNewAddress(walletDB, "default");
                             return 0;
                         }
                         else
@@ -1378,8 +1386,10 @@ int main_impl(int argc, char* argv[])
 
                     if (command == cli::NEW_ADDRESS)
                     {
-                        auto comment = vm[cli::NEW_ADDRESS_COMMENT].as<string>();
-                        CreateNewAddress(walletDB, comment, vm[cli::EXPIRATION_TIME].as<string>() == "never");
+                        if (!CreateNewAddress(vm, walletDB))
+                        {
+                            return -1;
+                        }
 
                         if (!vm.count(cli::LISTEN))
                         {
@@ -1596,7 +1606,7 @@ int main_impl(int argc, char* argv[])
                                     return -1;
                                 }
 
-                                WalletAddress senderAddress = CreateNewAddress(walletDB, "");
+                                WalletAddress senderAddress = GenerateNewAddress(walletDB, "");
 
                                 currentTxID = wallet.swap_coins(senderAddress.m_walletID, receiverWalletID, 
                                     move(amount), move(fee), swapCoin, swapAmount, secondSideChainType, isBeamSide);
@@ -1632,7 +1642,7 @@ int main_impl(int argc, char* argv[])
 
                         if (isTxInitiator)
                         {
-                            WalletAddress senderAddress = CreateNewAddress(walletDB, "");
+                            WalletAddress senderAddress = GenerateNewAddress(walletDB, "");
                             CoinIDList coinIDs = GetPreselectedCoinIDs(vm);
                             currentTxID = wallet.transfer_money(senderAddress.m_walletID, receiverWalletID, move(amount), move(fee), coinIDs, command == cli::SEND, kDefaultTxLifetime, kDefaultTxResponseTime, {}, true);
                         }
