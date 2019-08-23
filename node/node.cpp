@@ -3743,10 +3743,16 @@ IExternalPOW::BlockFoundResult Node::Miner::OnMinedExternal()
         return IExternalPOW::solution_rejected;
     }
 
+    IExternalPOW::BlockFoundResult result(IExternalPOW::solution_accepted);
+    Merkle::Hash hv;
+    pTask->m_Hdr.get_Hash(hv);
+    result._blockhash = to_hex(hv.m_pData, hv.nBytes);
+
 	m_pTask = pTask;
     *m_pTask->m_pStop = true;
     m_pEvtMined->post();
-    return IExternalPOW::solution_accepted;
+
+    return result;
 }
 
 void Node::Miner::OnMined()
@@ -4073,8 +4079,8 @@ bool Node::GenerateRecoveryInfo(const char* szPath)
 
 			if (n.IsExt())
 			{
-				for (auto it = n.m_pIDs->begin(); n.m_pIDs->end() != it; it++)
-					OnUtxo(d, *it);
+				for (auto p = n.m_pIDs.get_Strict()->m_pTop.get_Strict(); p; p = p->m_pNext.get())
+					OnUtxo(d, p->m_ID);
 			}
 			else
 				OnUtxo(d, n.m_ID);

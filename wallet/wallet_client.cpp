@@ -14,7 +14,7 @@
 
 #include "wallet_client.h"
 #include "utility/log_rotation.h"
-#include "../core/block_rw.h"
+#include "core/block_rw.h"
 
 
 using namespace std;
@@ -31,19 +31,19 @@ struct ScopedSubscriber
         : m_observer(observer)
         , m_notifier(notifier)
     {
-        m_notifier->subscribe(m_observer);
+        m_notifier->Subscribe(m_observer);
     }
 
     ~ScopedSubscriber()
     {
-        m_notifier->unsubscribe(m_observer);
+        m_notifier->Unsubscribe(m_observer);
     }
 private:
     Observer * m_observer;
     std::shared_ptr<Notifier> m_notifier;
 };
 
-using WalletSubscriber = ScopedSubscriber<wallet::IWalletObserver, wallet::IWallet>;
+using WalletSubscriber = ScopedSubscriber<wallet::IWalletObserver, wallet::Wallet>;
 
 struct WalletModelBridge : public Bridge<IWalletModelAsync>
 {
@@ -168,12 +168,13 @@ struct WalletModelBridge : public Bridge<IWalletModelAsync>
 
 namespace beam::wallet
 {
-    WalletClient::WalletClient(IWalletDB::Ptr walletDB, const std::string& nodeAddr, io::Reactor::Ptr reactor)
+    WalletClient::WalletClient(IWalletDB::Ptr walletDB, const std::string& nodeAddr, io::Reactor::Ptr reactor, IPrivateKeyKeeper::Ptr keyKeeper)
         : m_walletDB(walletDB)
         , m_reactor{ reactor ? reactor : io::Reactor::create() }
         , m_async{ make_shared<WalletModelBridge>(*(static_cast<IWalletModelAsync*>(this)), *m_reactor) }
         , m_isConnected(false)
         , m_nodeAddrStr(nodeAddr)
+        , m_keyKeeper(keyKeeper)
     {
     }
 
@@ -227,7 +228,7 @@ namespace beam::wallet
                     static const unsigned LOG_CLEANUP_PERIOD_SEC = 120 * 3600; // 5 days
                     LogRotation logRotation(*m_reactor, LOG_ROTATION_PERIOD_SEC, LOG_CLEANUP_PERIOD_SEC);
 
-                    auto wallet = make_shared<Wallet>(m_walletDB);
+                    auto wallet = make_shared<Wallet>(m_walletDB, m_keyKeeper);
                     m_wallet = wallet;
 
                     class NodeNetwork final: public proto::FlyClient::NetworkStd
@@ -302,7 +303,7 @@ namespace beam::wallet
                     auto nodeNetwork = make_shared<NodeNetwork>(*wallet, *this, m_nodeAddrStr);
                     m_nodeNetwork = nodeNetwork;
 
-                    auto walletNetwork = make_shared<WalletNetworkViaBbs>(*wallet, nodeNetwork, m_walletDB);
+                    auto walletNetwork = make_shared<WalletNetworkViaBbs>(*wallet, nodeNetwork, m_walletDB, m_keyKeeper);
                     m_walletNetwork = walletNetwork;
                     wallet->SetNodeEndpoint(nodeNetwork);
                     wallet->AddMessageEndpoint(walletNetwork);
@@ -403,15 +404,15 @@ namespace beam::wallet
     {
         try
         {
-            WalletAddress senderAddress = storage::createAddress(*m_walletDB);
-            saveAddress(senderAddress, true); // should update the wallet_network
-
-            ByteBuffer message(comment.begin(), comment.end());
-
             assert(!m_wallet.expired());
             auto s = m_wallet.lock();
             if (s)
             {
+                WalletAddress senderAddress = storage::createAddress(*m_walletDB, m_keyKeeper);
+                saveAddress(senderAddress, true); // should update the wallet_network
+
+                ByteBuffer message(comment.begin(), comment.end());
+
                 s->transfer_money(senderAddress.m_walletID, receiver, move(amount), move(fee), true, kDefaultTxLifetime, kDefaultTxResponseTime, move(message), true);
             }
 
@@ -520,7 +521,7 @@ namespace beam::wallet
         auto w = m_wallet.lock();
         if (w)
         {
-            static_pointer_cast<IWallet>(w)->cancel_tx(id);
+            w->CancelTransaction(id);
         }
     }
 
@@ -529,7 +530,7 @@ namespace beam::wallet
         auto w = m_wallet.lock();
         if (w)
         {
-            static_pointer_cast<IWallet>(w)->delete_tx(id);
+            w->DeleteTransaction(id);
         }
     }
 
@@ -552,9 +553,15 @@ namespace beam::wallet
     {
         try
         {
-            WalletAddress address = storage::createAddress(*m_walletDB);
+            assert(!m_wallet.expired());
+            auto s = m_wallet.lock();
+            if (s)
+            {
+                WalletAddress address = storage::createAddress(*m_walletDB, m_keyKeeper);
 
-            onGeneratedNewAddress(address);
+                onGeneratedNewAddress(address);
+            }
+
         }
         catch (const CannotGenerateSecretException&)
         {

@@ -22,11 +22,12 @@
 #include "wallet/swaps/common.h"
 #include "wallet/swaps/swap_transaction.h"
 #include "utility/test_helpers.h"
-#include "../../core/radixtree.h"
-#include "../../core/unittest/mini_blockchain.h"
+#include "core/radixtree.h"
+#include "core/unittest/mini_blockchain.h"
 #include <string_view>
 #include "wallet/wallet_transaction.h"
-#include "../../core/negotiator.h"
+#include "wallet/local_private_key_keeper.h"
+#include "core/negotiator.h"
 #include "node/node.h"
 
 #include "test_helpers.h"
@@ -515,7 +516,9 @@ void ExpireByResponseTime(bool isBeamSide)
 
     sender->m_Wallet.initBitcoin(*mainReactor, aliceOptions);
 
-    WalletAddress receiverWalletAddress = storage::createAddress(*createReceiverWalletDB());
+    auto db = createReceiverWalletDB();
+    auto keyKeeper = std::make_shared<LocalPrivateKeyKeeper>(db);
+    WalletAddress receiverWalletAddress = storage::createAddress(*db, keyKeeper);
     WalletID receiverWalletID = receiverWalletAddress.m_walletID;
 
     TxID txID = sender->m_Wallet.swap_coins(sender->m_WalletID, receiverWalletID, beamAmount, beamFee,
@@ -594,7 +597,7 @@ void TestSwapCancelTransaction(bool isSender, wallet::AtomicSwapTransaction::Sta
         storage::getTxParameter(*walletRig->m_WalletDB, txID, wallet::kDefaultSubTxID, wallet::TxParameterID::State, txState);
         if (txState == testingState)
         {
-            walletRig->m_Wallet.cancel_tx(txID);
+            walletRig->m_Wallet.CancelTransaction(txID);
         }
         else
         {
