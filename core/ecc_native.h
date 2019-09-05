@@ -112,6 +112,14 @@ namespace ECC
 
     std::ostream& operator << (std::ostream&, const Scalar::Native&);
 
+	struct Point::Storage
+	{
+		uintBig m_X;
+		uintBig m_Y;
+
+		void FromNnz(secp256k1_ge&);
+	};
+
 	class Point::Native
 		:private secp256k1_gej
 	{
@@ -122,6 +130,9 @@ namespace ECC
 		typedef Op::Binary<Op::Mul, Native, Scalar::Native>	Mul;
 
 		Native(const Point&);
+
+		void ExportNnz(secp256k1_ge&) const;
+
 	public:
 		secp256k1_gej& get_Raw() { return *this; } // use with care
 
@@ -152,11 +163,14 @@ namespace ECC
 		template <class Setter> Native& operator = (const Setter& v) { v.Assign(*this, true); return *this; }
 		template <class Setter> Native& operator += (const Setter& v) { v.Assign(*this, false); return *this; }
 
-		bool ImportNnz(const Point&); // won't accept zero point, doesn't zero itself in case of failure
-		bool Import(const Point&);
+		bool ImportNnz(const Point&, Storage* = nullptr); // won't accept zero point, doesn't zero itself in case of failure
+		bool Import(const Point&, Storage* = nullptr);
 		bool Export(Point&) const; // if the point is zero - returns false and zeroes the result
 
 		static void ExportEx(Point&, const secp256k1_ge&);
+
+		bool Import(const Storage&, bool bVerify);
+		void Export(Storage&) const;
 	};
 
     std::ostream& operator << (std::ostream&, const Point::Native&);
@@ -206,21 +220,18 @@ namespace ECC
 			struct Fast
 			{
 				// In fast mode: x1 is assigned from the beginning, then on-demand calculated x2 and then only odd multiples.
-				static const int nMaxOdd = (1 << 5) - 1; // 31
+				static const int nMaxOdd = (1 << 4) - 1; // 15
 				static const int nCount = (nMaxOdd >> 1) + 2; // we need a single even: x2
 			};
 
 
 			Point::Native m_pPt[(Secure::nCount > Fast::nCount) ? Secure::nCount : Fast::nCount];
 
-			Scalar::Native m_K;
-
 			// used in fast mode
 			unsigned int m_nPrepared;
 			FastAux m_Aux;
 
 			void Init(const Point::Native&);
-			void Init(const Point::Native&, const Scalar::Native&);
 		};
 
 		struct Prepared
@@ -252,6 +263,7 @@ namespace ECC
 		Casual* m_pCasual;
 		const Prepared** m_ppPrepared;
 		Scalar::Native* m_pKPrep;
+		Scalar::Native* m_pKCasual;
 		FastAux* m_pAuxPrepared;
 
 		int m_Casual;
@@ -271,6 +283,7 @@ namespace ECC
 			Casual m_pCasual[nMaxCasual];
 			const Prepared* m_ppPrepared[nMaxPrepared];
 			Scalar::Native m_pKPrep[nMaxPrepared];
+			Scalar::Native m_pKCasual[nMaxCasual];
 			FastAux m_pAuxPrepared[nMaxPrepared];
 		} m_Bufs;
 
@@ -279,6 +292,7 @@ namespace ECC
 			m_pCasual		= m_Bufs.m_pCasual;
 			m_ppPrepared	= m_Bufs.m_ppPrepared;
 			m_pKPrep		= m_Bufs.m_pKPrep;
+			m_pKCasual		= m_Bufs.m_pKCasual;
 			m_pAuxPrepared	= m_Bufs.m_pAuxPrepared;
 		}
 
@@ -619,6 +633,10 @@ namespace ECC
 			MultiMac::Prepared m_Aux2_;
 			MultiMac::Prepared G_;
 			MultiMac::Prepared H_;
+			MultiMac::Prepared J_;
+
+			// useful constants
+			Scalar::Native m_2Inv;
 
 		} m_Ipp;
 
@@ -655,12 +673,13 @@ namespace ECC
 
 		static const uint32_t s_CasualCountPerProof = nCycles * 2 + 5; // L[], R[], A, S, T1, T2, Commitment
 
-		static const uint32_t s_CountPrepared = InnerProduct::nDim * 2 + 4; // [2][InnerProduct::nDim], m_GenDot_, m_Aux2_, G_, H_
+		static const uint32_t s_CountPrepared = InnerProduct::nDim * 2 + 5; // [2][InnerProduct::nDim], m_GenDot_, m_Aux2_, G_, H_, J_
 
 		static const uint32_t s_Idx_GenDot	= InnerProduct::nDim * 2;
 		static const uint32_t s_Idx_Aux2	= InnerProduct::nDim * 2 + 1;
 		static const uint32_t s_Idx_G		= InnerProduct::nDim * 2 + 2;
 		static const uint32_t s_Idx_H		= InnerProduct::nDim * 2 + 3;
+		static const uint32_t s_Idx_J		= InnerProduct::nDim * 2 + 4;
 
 		struct Bufs {
 			const Prepared* m_ppPrepared[s_CountPrepared];
@@ -676,9 +695,10 @@ namespace ECC
 		Scalar::Native m_Multiplier; // must be initialized in a non-trivial way
 		Point::Native m_Sum; // intermediate result, sum of Casuals
 
-		bool AddCasual(const Point& p, const Scalar::Native& k);
-		void AddCasual(const Point::Native& pt, const Scalar::Native& k);
+		bool AddCasual(const Point& p, const Scalar::Native& k, bool bPremultiplied = false);
+		void AddCasual(const Point::Native& pt, const Scalar::Native& k, bool bPremultiplied = false);
 		void AddPrepared(uint32_t i, const Scalar::Native& k);
+		void AddPreparedM(uint32_t i, const Scalar::Native& k);
 
 		void EquationBegin();
 
@@ -694,12 +714,20 @@ namespace ECC
 		:public BatchContext
 	{
 		uint64_t m_pBuf[(sizeof(MultiMac::Casual) * s_CasualCountPerProof * nBatchSize + sizeof(uint64_t) - 1) / sizeof(uint64_t)];
+		uint64_t m_pBuf2[(sizeof(Scalar::Native) * s_CasualCountPerProof * nBatchSize + sizeof(uint64_t) - 1) / sizeof(uint64_t)];
 
 		BatchContextEx()
 			:BatchContext(nBatchSize * s_CasualCountPerProof)
 		{
 			m_pCasual = (MultiMac::Casual*) m_pBuf;
+			m_pKCasual = (Scalar::Native*) m_pBuf2;
 		}
+	};
+
+	struct InnerProduct::Modifier::Channel
+	{
+		Scalar::Native m_pV[nDim];
+		void SetPwr(const Scalar::Native& x); // m_pV[i] = x ^ i
 	};
 
 	class Commitment

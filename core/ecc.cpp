@@ -446,7 +446,7 @@ namespace ECC {
         secp256k1_gej_set_infinity(this);
     }
 
-	bool Point::Native::ImportNnz(const Point& v)
+	bool Point::Native::ImportNnz(const Point& v, Storage* pS /* = nullptr */)
 	{
 		if (v.m_Y > 1)
 			return false; // should always be well-formed
@@ -461,16 +461,39 @@ namespace ECC {
 
 		secp256k1_gej_set_ge(this, &ge.V);
 
+		if (pS)
+			pS->FromNnz(ge.V);
+
 		return true;
 	}
 
-	bool Point::Native::Import(const Point& v)
+	void Point::Storage::FromNnz(secp256k1_ge& ge)
 	{
-		if (ImportNnz(v))
+		// normalization seems unnecessary, but it's minor
+		secp256k1_fe_normalize(&ge.x);
+		secp256k1_fe_normalize(&ge.y);
+
+		secp256k1_fe_get_b32(m_X.m_pData, &ge.x);
+		secp256k1_fe_get_b32(m_Y.m_pData, &ge.y);
+	}
+
+	bool Point::Native::Import(const Point& v, Storage* pS /* = nullptr */)
+	{
+		if (ImportNnz(v, pS))
 			return true;
 
 		*this = Zero;
+		if (pS)
+			ZeroObject(*pS);
+
 		return memis0(&v, sizeof(v));
+	}
+
+	void Point::Native::ExportNnz(secp256k1_ge& ge) const
+	{
+		NoLeak<secp256k1_gej> dup;
+		dup.V = *this;
+		secp256k1_ge_set_gej(&ge, &dup.V);
 	}
 
 	bool Point::Native::Export(Point& v) const
@@ -481,10 +504,8 @@ namespace ECC {
 			return false;
 		}
 
-		NoLeak<secp256k1_gej> dup;
-		dup.V = *this;
 		NoLeak<secp256k1_ge> ge;
-		secp256k1_ge_set_gej(&ge.V, &dup.V);
+		ExportNnz(ge.V);
 
 		// seems like normalization can be omitted (already done by secp256k1_ge_set_gej), but not guaranteed according to docs.
 		// But this has a negligible impact on the performance
@@ -500,6 +521,42 @@ namespace ECC {
 	{
 		secp256k1_fe_get_b32(v.m_X.m_pData, &ge.x);
 		v.m_Y = (secp256k1_fe_is_odd(&ge.y) != 0);
+	}
+
+	void Point::Native::Export(Storage& v) const
+	{
+		if (*this == Zero)
+			ZeroObject(v);
+		else
+		{
+			secp256k1_ge ge;
+			ExportNnz(ge);
+			v.FromNnz(ge);
+		}
+	}
+
+	bool Point::Native::Import(const Storage& v, bool bVerify)
+	{
+		if (memis0(&v, sizeof(v)))
+			*this = Zero;
+		else
+		{
+			secp256k1_ge ge;
+			ZeroObject(ge);
+
+			secp256k1_fe_set_b32(&ge.x, v.m_X.m_pData);
+			secp256k1_fe_set_b32(&ge.y, v.m_Y.m_pData);
+
+			if (bVerify && !secp256k1_ge_is_valid_var(&ge))
+			{
+				*this = Zero;
+				return false;
+			}
+
+			secp256k1_gej_set_ge(this, &ge);
+		}
+
+		return true;
 	}
 
 	Point::Native& Point::Native::operator = (Zero_)
@@ -546,11 +603,12 @@ namespace ECC {
 	Point::Native& Point::Native::operator = (Mul v)
 	{
 		MultiMac::Casual mc;
-		mc.Init(v.x, v.y);
+		mc.Init(v.x);
 
 		MultiMac mm;
 		mm.m_pCasual = &mc;
 		mm.m_Casual = 1;
+		mm.m_pKCasual = Cast::NotConst(&v.y);
 		mm.Calculate(*this);
 
 		return *this;
@@ -907,12 +965,6 @@ namespace ECC {
 		}
 	}
 
-	void MultiMac::Casual::Init(const Point::Native& p, const Scalar::Native& k)
-	{
-		Init(p);
-		m_K = k;
-	}
-
 	void MultiMac::Reset()
 	{
 		m_Casual = 0;
@@ -981,7 +1033,7 @@ namespace ECC {
 			for (int iEntry = 0; iEntry < m_Casual; iEntry++)
 			{
 				Casual& x = m_pCasual[iEntry];
-				x.m_Aux.Schedule(x.m_K, nBits, Casual::Fast::nMaxOdd, pTblCasual, iEntry + 1);
+				x.m_Aux.Schedule(m_pKCasual[iEntry], nBits, Casual::Fast::nMaxOdd, pTblCasual, iEntry + 1);
 			}
 
 		}
@@ -1023,7 +1075,7 @@ namespace ECC {
 
 					res += x.m_pPt[nElem];
 
-					x.m_Aux.Schedule(x.m_K, iBit, Casual::Fast::nMaxOdd, pTblCasual, iEntry);
+					x.m_Aux.Schedule(m_pKCasual[iEntry - 1], iBit, Casual::Fast::nMaxOdd, pTblCasual, iEntry);
 				}
 
 
@@ -1051,7 +1103,7 @@ namespace ECC {
 					{
 						Casual& x = m_pCasual[iEntry];
 
-						unsigned int nVal = GetPortion(x.m_K, iWord, iBitInWord, Casual::Secure::nBits);
+						unsigned int nVal = GetPortion(m_pKCasual[iEntry], iWord, iBitInWord, Casual::Secure::nBits);
 
 						//Point::Native ptVal;
 						//for (unsigned int i = 0; i < Casual::Secure::nCount; i++)
@@ -1195,6 +1247,7 @@ namespace ECC {
 
 		ctx.m_Ipp.G_.Initialize(G_raw, oracle);
 		ctx.m_Ipp.H_.Initialize(H_raw, oracle);
+		ctx.m_Ipp.J_.Initialize(J_raw, oracle);
 
 		for (uint32_t i = 0; i < InnerProduct::nDim; i++)
 		{
@@ -1252,6 +1305,8 @@ namespace ECC {
 			mm.Calculate(pt);
 			Generator::FromPt(ctx.m_Casual.m_Compensation, pt);
 		}
+
+		ctx.m_Ipp.m_2Inv.SetInv(2U);
 
 		hpRes
 			<< uint32_t(2) // increment this each time we change signature formula (rangeproof and etc.)
@@ -1636,7 +1691,7 @@ namespace ECC {
 		m_k = k;
 	}
 
-	bool Signature::IsValidPartial(const Hash::Value& msg, const Point::Native& pubNonce, const Point::Native& pk) const
+	bool Signature::IsValidPartial(const Hash::Value& msg, const Point::Native& pubNonce, const Point::Native& pk, const Scalar* pSer /* = nullptr */) const
 	{
 		Mode::Scope scope(Mode::Fast);
 
@@ -1649,27 +1704,43 @@ namespace ECC {
 			pBc->EquationBegin();
 
 			pBc->AddPrepared(InnerProduct::BatchContext::s_Idx_G, m_k);
+			if (pSer)
+				pBc->AddPrepared(InnerProduct::BatchContext::s_Idx_J, *pSer);
 			pBc->AddCasual(pk, e);
-			pBc->AddCasual(pubNonce, 1U);
+			pBc->AddCasual(pubNonce, pBc->m_Multiplier, true);
 
 			return true;
 		}
 
-		Point::Native pt = Context::get().G * m_k;
+		MultiMac_WithBufs<1, 2> mm;
+		mm.m_ppPrepared[0] = &Context::get().m_Ipp.G_;
+		mm.m_pKPrep[0] = m_k;
+		mm.m_Prepared = 1;
+		mm.m_pCasual[0].Init(pk);
+		mm.m_pKCasual = &e;
+		mm.m_Casual = 1;
 
-		pt += pk * e;
+		if (pSer)
+		{
+			mm.m_ppPrepared[1] = &Context::get().m_Ipp.J_;
+			mm.m_pKPrep[1] = *pSer;
+			mm.m_Prepared = 2;
+		}
+
+		Point::Native pt;
+		mm.Calculate(pt);
+
 		pt += pubNonce;
-
 		return pt == Zero;
 	}
 
-	bool Signature::IsValid(const Hash::Value& msg, const Point::Native& pk) const
+	bool Signature::IsValid(const Hash::Value& msg, const Point::Native& pk, const Scalar* pSer /* = nullptr */) const
 	{
 		Point::Native pubNonce;
 		if (!pubNonce.Import(m_NoncePub))
 			return false;
 
-		return IsValidPartial(msg, pubNonce, pk);
+		return IsValidPartial(msg, pubNonce, pk, pSer);
 	}
 
 	int Signature::cmp(const Signature& x) const

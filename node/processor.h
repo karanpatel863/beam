@@ -38,6 +38,7 @@ class NodeProcessor
 	size_t m_nSizeUtxoComission;
 
 	struct MultiblockContext;
+	struct MultiShieldedContext;
 
 	void RollbackTo(Height);
 	Height PruneOld();
@@ -56,12 +57,13 @@ class NodeProcessor
 	bool HandleValidatedBlock(TxBase::IReader&&, const Block::BodyBase&, Height, bool bFwd, const Height* = NULL);
 	bool HandleBlockElement(const Input&, Height, const Height*, bool bFwd);
 	bool HandleBlockElement(const Output&, Height, const Height*, bool bFwd);
+	bool HandleShieldedElement(const ECC::Point&, bool bOutp, bool bFwd);
 
 	bool ImportMacroBlockInternal(Block::BodyBase::IMacroReader&);
 	void RecognizeUtxos(TxBase::IReader&&, Height hMax);
 
 	static void SquashOnce(std::vector<Block::Body>&);
-	static uint64_t ProcessKrnMmr(Merkle::Mmr&, TxBase::IReader&&, Height, const Merkle::Hash& idKrn, TxKernel::Ptr* ppRes);
+	static uint64_t ProcessKrnMmr(Merkle::Mmr&, TxBase::IReader&&, const Merkle::Hash& idKrn, TxKernel::Ptr* ppRes);
 
 	static const uint32_t s_TxoNakedMin = sizeof(ECC::Point); // minimal output size - commitment
 	static const uint32_t s_TxoNakedMax = s_TxoNakedMin + 0x10; // In case the output has the Incubation period - extra size is needed (actually less than this).
@@ -122,6 +124,8 @@ public:
 	void Initialize(const char* szPath);
 	void Initialize(const char* szPath, const StartParams&);
 
+	static void get_UtxoMappingPath(std::string&, const char*);
+
 	virtual ~NodeProcessor();
 
 	struct Horizon {
@@ -152,6 +156,7 @@ public:
 	{
 		TxoID m_TxosTreasury;
 		TxoID m_Txos; // total num of ever created TXOs, including treasury
+		TxoID m_Shielded;
 
 		Height m_LoHorizon; // lowest accessible height
 		Height m_Fossil; // from here and down - no original blocks
@@ -250,9 +255,12 @@ public:
 
 	uint64_t FindActiveAtStrict(Height);
 
-	bool ValidateTxContext(const Transaction&, const HeightRange&); // assuming context-free validation is already performed, but 
+	bool ValidateTxContext(const Transaction&, const HeightRange&, bool bShieldedTested); // assuming context-free validation is already performed, but 
 	bool ValidateTxWrtHeight(const Transaction&, const HeightRange&);
 	bool ValidateInputs(const ECC::Point&, Input::Count = 1);
+	bool ValidateShieldedNoDup(const ECC::Point&, bool bOutp);
+	bool IsShieldedInPool(const Input&);
+	bool IsShieldedInPool(const Transaction&);
 
 	struct GeneratedBlock
 	{
