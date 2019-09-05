@@ -183,8 +183,9 @@
         <translation>Näytä kansiossa</translation>
     </message>
     <message id="general-addr-comment-error">
-        <source>Address with same comment already exist</source>
-        <translation>Kommentti on jo käytössä toisessa osoitteessa</translation>
+        <source>Address with the same comment already exists</source>
+        <oldsource>Address with same comment already exist</oldsource>
+        <translation type="unfinished">Kommentti on jo käytössä toisessa osoitteessa</translation>
     </message>
     <message id="wallet-receive-button">
         <source>Receive</source>
@@ -212,7 +213,7 @@
     </message>
     <message id="wallet-txs-delete-message">
         <source>The transaction will be deleted. This operation can not be undone</source>
-        <translation>Tilitapahtuma poistetaan. Tätä toimintoa ei voida peruuttaa</translation>
+        <translation>Tapahtuman tiedot poistetaan. Tätä toimintoa ei voida peruuttaa</translation>
     </message>
     <message id="wallet-txs-status-pending">
         <source>pending</source>
@@ -224,7 +225,7 @@
     </message>
     <message id="wallet-txs-status-waiting-receiver">
         <source>waiting for receiver</source>
-        <translation>odottaa vastaanottajaa</translation>
+        <translation>odottaa saajaa</translation>
     </message>
     <message id="wallet-txs-status-completed">
         <source>completed</source>
@@ -260,11 +261,11 @@
     </message>
     <message id="addresses-tab-active">
         <source>My active addresses</source>
-        <translation>Omat aktiiviset osoitteeni</translation>
+        <translation>Omat aktiiviset osoitteet</translation>
     </message>
     <message id="addresses-tab-expired">
         <source>My expired addresses</source>
-        <translation>Omat vanhentuneet osoitteeni</translation>
+        <translation>Omat vanhentuneet osoitteet</translation>
     </message>
     <message id="addresses-tab-contacts">
         <source>Contacts</source>
@@ -320,7 +321,7 @@
     <message id="settings-rescan-confirmation-message">
         <source>Rescan will sync transaction and UTXO data with the latest information on the blockchain. The process might take long time.</source>
         <extracomment>settings tab, confirm rescan dialog message</extracomment>
-        <translation>Uudelleenskannaus synkronoi tapahtuma- ja UTXO-tiedot lohkoketjun viimeisimpien tietojen kanssa. Päivitys voi kestää pitkään.</translation>
+        <translation>Uudelleenskannaus synkronoi tapahtuma- ja UTXO-tiedot lohkoketjun viimeisimpien tietojen kanssa. Skannaus voi kestää pitkään.</translation>
     </message>
     <message id="settings-general-title">
         <source>General settings</source>
@@ -453,7 +454,7 @@
     </message>
     <message id="payment-info-proof-receiver-label">
         <source>Receiver</source>
-        <translation>Vastaanottaja</translation>
+        <translation>Saaja</translation>
     </message>
     <message id="payment-info-copy-details-button">
         <source>Copy details</source>
@@ -465,7 +466,7 @@
     </message>
     <message id="secondary-panel-maturing">
         <source>Maturing</source>
-        <translation>Odottaa</translation>
+        <translation type="vanished">Odottaa</translation>
     </message>
     <message id="info-title">
         <source>Info view</source>
@@ -473,7 +474,7 @@
     </message>
     <message id="loading-change-settings-button">
         <source>Change settings</source>
-        <translation>Muuta asetuksia</translation>
+        <translation type="vanished">Muuta asetuksia</translation>
     </message>
     <message id="loading-try-again-button">
         <source>Try again</source>
@@ -532,11 +533,11 @@
     </message>
     <message id="send-confirmation-title">
         <source>Confirm transaction details</source>
-        <translation>Vahvista tapahtuman tiedot</translation>
+        <translation>Vahvista maksun tiedot</translation>
     </message>
     <message id="send-confirmation-recipient-label">
         <source>Recipient</source>
-        <translation>Vastaanottaja</translation>
+        <translation>Saaja</translation>
     </message>
     <message id="send-confirmation-pwd-require-message">
         <source>To broadcast your transaction please enter your password</source>
@@ -547,16 +548,19 @@
         <translation>Lompakko</translation>
     </message>
     <message id="wallet-receive-title">
-        <source>Receive Beam</source>
-        <translation>Beamin vastaanottaminen</translation>
+        <source>Receive</source>
+        <oldsource>Receive Beam</oldsource>
+        <translation type="unfinished">Beamin vastaanottaminen</translation>
     </message>
     <message id="wallet-receive-my-addr-label">
-        <source>My address</source>
-        <translation>Oma osoitteeni</translation>
+        <source>My address (auto-generated)</source>
+        <oldsource>My address</oldsource>
+        <translation type="unfinished">Oma osoite</translation>
     </message>
     <message id="wallet-receive-expires-label">
-        <source>Expires</source>
-        <translation>Vanhentuu</translation>
+        <source>Expires in</source>
+        <oldsource>Expires</oldsource>
+        <translation type="unfinished">Vanhentuu</translation>
     </message>
     <message id="wallet-receive-expires-24">
         <source>24 hours</source>
@@ -572,23 +576,26 @@
     </message>
     <message id="wallet-receive-propogate-addr-message">
         <source>Send this address to the sender over an external secure channel</source>
-        <translation>Lähetä tämä osoite maksun suorittajalle turvallista viestintävälinettä käyttäen</translation>
+        <translation type="vanished">Lähetä tämä osoite siirron suorittajalle turvallista viestintävälinettä käyttäen</translation>
     </message>
     <message id="invalid-addr-got-it-button">
         <source>Got it</source>
-        <translation>Selvä</translation>
+        <translation type="vanished">Selvä</translation>
     </message>
     <message id="send-title">
-        <source>Send Beam</source>
-        <translation>Beamin lähettäminen</translation>
+        <source>Send</source>
+        <oldsource>Send Beam</oldsource>
+        <translation type="unfinished">Beamin lähettäminen</translation>
     </message>
     <message id="send-send-to-label">
-        <source>Send To</source>
-        <translation>Vastaanottaja</translation>
+        <source>Transaction token or contact</source>
+        <oldsource>Send To</oldsource>
+        <translation type="unfinished">Saaja</translation>
     </message>
     <message id="send-contact-placeholder">
-        <source>Please specify contact</source>
-        <translation>Määritä yhteystieto</translation>
+        <source>Please specify contact or transaction token</source>
+        <oldsource>Please specify contact</oldsource>
+        <translation type="unfinished">Määritä yhteystieto</translation>
     </message>
     <message id="send-amount-label">
         <source>Transaction amount</source>
@@ -600,11 +607,11 @@
     </message>
     <message id="send-fee-fail">
         <source>The minimum fee is %1 GROTH</source>
-        <translation>Minimisiirtomaksu on %1 GROTHia</translation>
+        <translation type="vanished">Minimisiirtomaksu on %1 GROTHia</translation>
     </message>
     <message id="send-curency-sub-name">
         <source>GROTH</source>
-        <translation>GROTH</translation>
+        <translation type="vanished">GROTH</translation>
     </message>
     <message id="send-remaining-label">
         <source>Remaining</source>
@@ -612,7 +619,7 @@
     </message>
     <message id="send-send-fail">
         <source>Address %1 is invalid</source>
-        <translation>Osoite %1 on virheellinen</translation>
+        <translation type="vanished">Osoite %1 on virheellinen</translation>
     </message>
     <message id="start-restore-confirm-button">
         <source>I agree</source>
@@ -620,7 +627,7 @@
     </message>
     <message id="start-restore-message-line">
         <source>You are trying to restore an existing Beam Wallet. Please notice that if you use your wallet on another device, your balance will be up to date, but  transaction history and addresses will be kept separately on each device.</source>
-        <translation>Olet palauttamassa vanhaa lompakkoa. Huomioithan, että jos olet jo käyttänyt lompakkoa toisella laitteella, historiatiedot tilitapahtumista sekä tallentamasi osoitteet eivät siirry uudelle laitteelle palautuksen yhteydessä. Tilitapahtumat sekä osoitteet tallennetaan erikseen kullekin laitteelle. Lompakkosi saldo kuitenkin palautetaan ja on käytettävissä ajantasaisena uudessa laitteessa.</translation>
+        <translation>Olet palauttamassa vanhaa lompakkoa. Huomioithan, että jos olet jo käyttänyt lompakkoa toisella laitteella, tapahtumahistoria sekä tallentamasi osoitteet eivät siirry uudelle laitteelle palautuksen yhteydessä. Tapahtumat sekä osoitteet tallennetaan erikseen kullekin laitteelle. Lompakkosi saldo kuitenkin palautetaan ja on käytettävissä ajantasaisena uudessa laitteessa.</translation>
     </message>
     <message id="start-migration-message">
         <source>Your wallet will be migrated to v.</source>
@@ -842,7 +849,7 @@
     </message>
     <message id="tx-failture-receiver-signature-invalid">
         <source>Receiver signature in not valid, please send wallet logs to Beam support</source>
-        <translation>Vastaanottajan allekirjoitus ei ole pätevä, ole hyvä ja lähetä lompakon lokitiedostot Beam-tukeen (palvelu englanniksi)</translation>
+        <translation>Saajan allekirjoitus ei ole pätevä, ole hyvä ja lähetä lompakon lokitiedostot Beam-tukeen (palvelu englanniksi)</translation>
     </message>
     <message id="tx-failture-not-registered-in-blockchain">
         <source>Failed to register transaction with the blockchain, see node logs for details</source>
@@ -878,7 +885,7 @@
     </message>
     <message id="tx-failture-not-signed-by-receiver">
         <source>Payment not signed by the receiver, please send wallet logs to Beam support</source>
-        <translation>Vastaanottaja ei allekirjoittanut maksutapahtumaa, ole hyvä ja lähetä lompakon lokitiedostot Beam-tukeen (palvelu englanniksi)</translation>
+        <translation>Saaja ei allekirjoittanut maksutapahtumaa, ole hyvä ja lähetä lompakon lokitiedostot Beam-tukeen (palvelu englanniksi)</translation>
     </message>
     <message id="tx-failture-max-height-to-high">
         <source>Kernel maximum height is too high</source>
@@ -886,15 +893,15 @@
     </message>
     <message id="tx-failture-invalid-state">
         <source>Transaction has invalid state</source>
-        <translation>Maksutapahtuman tila on virheellinen</translation>
+        <translation>Tapahtuman tila on virheellinen</translation>
     </message>
     <message id="tx-curency-name">
         <source>BEAM</source>
-        <translation>BEAM</translation>
+        <translation type="vanished">BEAM</translation>
     </message>
     <message id="tx-curency-sub-name">
         <source>GROTH</source>
-        <translation>GROTH</translation>
+        <translation type="vanished">GROTH</translation>
     </message>
     <message id="utxo-utxo">
         <source>UTXO</source>
@@ -902,11 +909,11 @@
     </message>
     <message id="utxo-blockchain-height">
         <source>Blockchain Height</source>
-        <translation>Lohkoketjun taso</translation>
+        <translation>Lohkoketjun pituus</translation>
     </message>
     <message id="utxo-last-block-hash">
         <source>Last block hash</source>
-        <translation>Lohkon tiiiviste (hash)</translation>
+        <translation>Viim. lohkon tiiviste</translation>
     </message>
     <message id="utxo-head-maturity">
         <source>Maturity</source>
@@ -922,7 +929,7 @@
     </message>
     <message id="utxo-status-maturing">
         <source>Maturing%1(till block height %2)</source>
-        <translation>Erääntyy%1(lohkon tasolla %2 )</translation>
+        <translation>Erääntyy%1(lohkon tasolla %2)</translation>
     </message>
     <message id="utxo-status-unavailable">
         <source>Unavailable%1(mining result rollback)</source>
@@ -974,7 +981,7 @@
     </message>
     <message id="tx-details-tx-id-label">
         <source>Transaction ID</source>
-        <translation>Tapahtumatunniste</translation>
+        <translation>Tapahtuman id</translation>
     </message>
     <message id="appmodel-failed-time-not-synced">
         <source>Failed to start the integrated node: the timezone settings of your machine are out of sync. Please fix them and restart the wallet.</source>
@@ -982,7 +989,7 @@
     </message>
     <message id="can-not-generate-new-address-message">
         <source>You cannot generate new address. Your wallet doesn&apos;t have a master key.</source>
-        <translation>Et voi luoda uutta osoitetta. Lompakossasi ei ole hallinta-avainta (master key).</translation>
+        <translation>Et voi luoda uutta osoitetta. Lompakossasi ei ole master key -hallinta-avainta.</translation>
     </message>
     <message id="settings-general-language">
         <source>Language</source>
@@ -1003,7 +1010,7 @@
     </message>
     <message id="start-open-change-wallet-message">
         <source>If you&apos;ll restore a wallet all transaction history and addresses will be lost.</source>
-        <translation>Jos haluat palauttaa vanhan lompakon, tilitapahtumahistoria ja tallennetut osoitteet katoavat pysyvästi.</translation>
+        <translation>Jos haluat palauttaa vanhan lompakon, tapahtumahistoria ja tallennetut osoitteet katoavat pysyvästi.</translation>
     </message>
     <message id="loading-restore-message-line1">
         <source>Please wait for synchronization and do not close or minimize the application.</source>
@@ -1037,12 +1044,12 @@
     <message id="show-qr-tx-token-label">
         <source>Your address</source>
         <extracomment>show qr dialog address label</extracomment>
-        <translation>Sinun osoitteesi</translation>
+        <translation>Sinun osoite</translation>
     </message>
     <message id="show-qr-message">
         <source>Scan this QR code or send this address to the sender over secure channel</source>
         <extracomment>show QR dialog message, how to use this QR</extracomment>
-        <translation>Skannaa QR-koodi tai lähetä tämä osoite maksun suorittajalle turvallista viestintävälinettä käyttäen</translation>
+        <translation>Skannaa QR-koodi tai lähetä tämä osoite siirron suorittajalle turvallista viestintävälinettä käyttäen</translation>
     </message>
     <message id="settings-peers-title">
         <source>Peers</source>
@@ -1057,7 +1064,7 @@
     <message id="settings-general-allow-beammw-label">
         <source>Allow access to %1 and %2 (to fetch exchanges and transaction data)</source>
         <extracomment>general settings, label for alow open external links</extracomment>
-        <translation>Anna sovellukselle lupa avata sivustot %1 ja %2 (tarkastellaksesi lohkoketjun maksutapahtumia)</translation>
+        <translation>Anna sovellukselle lupa avata sivustot %1 ja %2 (tarkastellaksesi lohkoketjun tapahtumia)</translation>
     </message>
     <message id="settings-report-problem-message-l0">
         <source>To report a problem:</source>
@@ -1189,6 +1196,270 @@
     <message id="restore-finish-alert-message-line">
         <source>Don’t use same seed phrase on several devices, your balance and transaction list won’t be synchronized.</source>
         <translation>Älä käytä samaa seed phrasea usealla laitteella, sillä saldosi ja tapahtumasi eivät synkronoidu.</translation>
+    </message>
+    <message id="tx-failture-subtx-failed">
+        <source>Subtransaction has failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-contract-amount">
+        <source>Contract&apos;s amount is not valid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-sidechain-contract">
+        <source>Side chain has invalid contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-sidechain-internal-error">
+        <source>Side chain bridge has internal error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-sidechain-network-error">
+        <source>Side chain bridge has network error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-sidechain-response-format">
+        <source>Side chain bridge has response format error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-invalid-side-chain-credentials">
+        <source>Invalid credentials of Side chain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-not-enough-time-btc-lock">
+        <source>Not enough time to finish btc lock transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-create-multisig">
+        <source>Failed to create multi-signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="tx-failture-fee-too-small">
+        <source>Fee is too small</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-minutes">
+        <source>min.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-seconds">
+        <source>sec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-time">
+        <source>Estimate time: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-fee-rate">
+        <source>Transaction fee rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-fee-fail">
+        <source>The minimum fee is %1 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-locked">
+        <source>locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-change-settings">
+        <source>Change settings</source>
+        <translation type="unfinished">Muuta asetuksia</translation>
+    </message>
+    <message id="wallet-swap">
+        <source>Swap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-reset">
+        <source>Switch off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-node-address">
+        <source>Node Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-username">
+        <source>Username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-password">
+        <source>Password</source>
+        <translation type="unfinished">Salasana</translation>
+    </message>
+    <message id="settings-fee-rate">
+        <source>Default fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-title">
+        <source>Offer Book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-create">
+        <source>Create an offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-title-2">
+        <source>Active offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-coins">
+        <source>Coins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-all-tab">
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-mine-tab">
+        <source>Mine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-others-tab">
+        <source>Others</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-time-created">
+        <source>Date | time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-amount">
+        <source>Amount</source>
+        <translation type="unfinished">Summa</translation>
+    </message>
+    <message id="offer-book-amount-swap">
+        <source>Amount</source>
+        <translation type="unfinished">Summa</translation>
+    </message>
+    <message id="offer-book-rate">
+        <source>Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-expiration">
+        <source>Expiration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-cancel">
+        <source>Cancel offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="offer-book-accept">
+        <source>Accept offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-na-message">
+        <source>You do not have any 3rd-party currencies connected.\nUpdate your settings and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-swap-title">
+        <source>Create swap offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-addr-message">
+        <source>Send this address to the sender over an external secure channel or scan the QR code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-copy-address">
+        <source>Copy transaction address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="receive-amount-swap-label">
+        <source>Receive amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="sent-amount-label">
+        <source>Sent amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-offer-expires-label">
+        <source>Offer expiration time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-expires-12">
+        <source>12 hours</source>
+        <translation type="unfinished">24 tuntia {12 ?}</translation>
+    </message>
+    <message id="wallet-receive-expires-6">
+        <source>6 hours</source>
+        <translation type="unfinished">24 tuntia {6 ?}</translation>
+    </message>
+    <message id="general-rate">
+        <source>Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-your-token">
+        <source>Your transaction token:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-swap-token-message">
+        <source>Send this token to the sender over an external secure channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-swap-publish">
+        <source>publish transaction token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-swap-title">
+        <source>Swap currencies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-invalid-token">
+        <source>Invalid address or token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-comment-local">
+        <source>Comments are local and won&apos;t be shared</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-total-label">
+        <source>Total UTXO value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-bitcoin">
+        <source>Bitcoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-litecoin">
+        <source>Litecoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-qtum">
+        <source>QTUM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-currency-na-message">
+        <source>You do not have %1 connected.\nUpdate your settings and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-swap-to-label">
+        <source>Transaction token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-not-enough">
+        <source>There is not enough funds to completer the transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-swap-offered-label">
+        <source>Offered on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-send-swap-expires-label">
+        <source>Expires on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-address-from">
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-address-to">
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-amount-sent">
+        <source>Sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-amount-received">
+        <source>Received</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
