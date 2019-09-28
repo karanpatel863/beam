@@ -9,10 +9,10 @@ import "../utils.js" as Utils
 
 Control {
     id:            thisControl
-    leftPadding:   28
-    rightPadding:  28
-    topPadding:    23
-    bottomPadding: 23
+    leftPadding:   25
+    rightPadding:  25
+    topPadding:    20
+    bottomPadding: 20
 
     property alias  title:        controlTitle.text
     property alias  address:      addressInput.address
@@ -180,6 +180,7 @@ Control {
                 minFee:           thisControl.minFeeRate
                 feeLabel:         thisControl.feeRateLabel
                 color:            Style.content_secondary
+                spacing:          0
 
                 Connections {
                     target: thisControl

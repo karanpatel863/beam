@@ -25,6 +25,12 @@
 #include <algorithm>
 #include "wallet/litecoin/settings.h"
 #include "wallet/qtum/settings.h"
+#include <boost/algorithm/string/trim.hpp>
+#include "utility/string_helpers.h"
+#include "mnemonic/mnemonic.h"
+#include "wallet/bitcoin/common.h"
+#include "wallet/qtum/common.h"
+#include "wallet/litecoin/common.h"
 
 using namespace beam;
 using namespace ECC;
@@ -94,7 +100,6 @@ QString SettingsViewModel::getBtcUser() const
 
 void SettingsViewModel::setBtcUser(const QString& value)
 {
-    LOG_INFO() << "SetBtcUser " << value.toStdString();
     if (value != m_bitcoinUser)
     {
         m_bitcoinUser = value;
@@ -110,7 +115,6 @@ QString SettingsViewModel::getBtcPass() const
 
 void SettingsViewModel::setBtcPass(const QString& value)
 {
-    LOG_INFO() << "setBtcPass ****";
     if (value != m_bitcoinPass)
     {
         m_bitcoinPass = value;
@@ -127,7 +131,6 @@ QString SettingsViewModel::getBtcNodeAddress() const
 void SettingsViewModel::setBtcNodeAddress(const QString& value)
 {
     const auto val = value == "0.0.0.0" ? "" : value;
-    LOG_INFO() << "setBtcNodeAddress " << val.toStdString();
     if (val != m_bitcoinNodeAddress)
     {
         m_bitcoinNodeAddress = val;
@@ -143,7 +146,6 @@ int SettingsViewModel::getBtcFeeRate() const
 
 void SettingsViewModel::setBtcFeeRate(int value)
 {
-    LOG_INFO() << "setBtcFeeRate " << value;
     if (value != m_bitcoinFeeRate)
     {
         m_bitcoinFeeRate = value;
@@ -154,10 +156,7 @@ void SettingsViewModel::setBtcFeeRate(int value)
 
 void SettingsViewModel::btcOff()
 {
-    setBtcFeeRate(QMLGlobals::defFeeRateBtc());
-    setBtcNodeAddress("");
-    setBtcPass("");
-    setBtcUser("");
+    SetDefaultBtcSettings();
     AppModel::getInstance().getBitcoinClient()->GetAsync()->ResetSettings();
 }
 
@@ -173,17 +172,13 @@ void SettingsViewModel::applyBtcSettings()
         connectionSettings.m_address.resolve(address.c_str());
     }
 
+    m_bitcoinSettings = bitcoin::Settings();
+
     m_bitcoinSettings->SetConnectionOptions(connectionSettings);
     m_bitcoinSettings->SetFeeRate(m_bitcoinFeeRate);
 
-    // TODO:SWAP-SETTINGS need to be moved to config
-#ifdef BEAM_MAINNET
-    m_bitcoinSettings->SetChainType(beam::wallet::SwapSecondSideChainType::Mainnet);
-#else
-    m_bitcoinSettings->SetChainType(beam::wallet::SwapSecondSideChainType::Testnet);
-#endif
-
     AppModel::getInstance().getBitcoinClient()->SetSettings(*m_bitcoinSettings);
+    SetDefaultBtcSettingsEL();
 }
 
 QString SettingsViewModel::getLtcUser() const
@@ -261,22 +256,13 @@ void SettingsViewModel::applyLtcSettings()
     m_litecoinSettings->SetConnectionOptions(connectionSettings);
     m_litecoinSettings->SetFeeRate(m_litecoinFeeRate);
 
-    // TODO:SWAP-SETTINGS need to be moved to config
-#ifdef BEAM_MAINNET
-    m_litecoinSettings->SetChainType(beam::wallet::SwapSecondSideChainType::Mainnet);
-#else
-    m_litecoinSettings->SetChainType(beam::wallet::SwapSecondSideChainType::Testnet);
-#endif
-
     AppModel::getInstance().getLitecoinClient()->SetSettings(*m_litecoinSettings);
+    SetDefaultLtcSettingsEL();
 }
 
 void SettingsViewModel::ltcOff()
 {
-    setLtcFeeRate(QMLGlobals::defFeeRateLtc());
-    setLtcNodeAddress("");
-    setLtcPass("");
-    setLtcUser("");
+    SetDefaultLtcSettings();
     AppModel::getInstance().getLitecoinClient()->GetAsync()->ResetSettings();
 }
 
@@ -355,24 +341,315 @@ void SettingsViewModel::applyQtumSettings()
     m_qtumSettings->SetConnectionOptions(connectionSettings);
     m_qtumSettings->SetFeeRate(m_qtumFeeRate);
 
-    // TODO:SWAP-SETTINGS need to be moved to config
-#ifdef BEAM_MAINNET
-    m_qtumSettings->SetChainType(beam::wallet::SwapSecondSideChainType::Mainnet);
-#else
-    m_qtumSettings->SetChainType(beam::wallet::SwapSecondSideChainType::Testnet);
-#endif
-
     AppModel::getInstance().getQtumClient()->SetSettings(*m_qtumSettings);
+    SetDefaultQtumSettingsEL();
 }
 
 void SettingsViewModel::qtumOff()
 {
-    setQtumFeeRate(QMLGlobals::defFeeRateQtum());
-    setQtumNodeAddress("");
-    setQtumPass("");
-    setQtumUser("");
+    SetDefaultQtumSettings();
     AppModel::getInstance().getQtumClient()->GetAsync()->ResetSettings();
 }
+
+QString SettingsViewModel::getBtcSeedEL() const
+{
+    return m_bitcoinSeedEl;
+}
+
+void SettingsViewModel::setBtcSeedEL(const QString& value)
+{
+    if (m_bitcoinSeedEl != value)
+    {
+        m_bitcoinSeedEl = value;
+        emit btcSeedELChanged();
+        emit propertiesChanged();
+    }
+}
+
+QString SettingsViewModel::getBtcNodeAddressEL() const
+{
+    return m_bitcoinNodeAddressEl;
+}
+
+void SettingsViewModel::setBtcNodeAddressEL(const QString& value)
+{
+    if (m_bitcoinNodeAddressEl != value)
+    {
+        m_bitcoinNodeAddressEl = value;
+        emit btcNodeAddressELChanged();
+        emit propertiesChanged();
+    }
+}
+
+int SettingsViewModel::getBtcFeeRateEL() const
+{
+    return m_bitcoinFeeRateEl;
+}
+
+
+void SettingsViewModel::setBtcFeeRateEL(int value)
+{
+    if (m_bitcoinFeeRateEl != value)
+    {
+        m_bitcoinFeeRateEl = value;
+        emit btcFeeRateELChanged();
+        emit propertiesChanged();
+    }
+}
+
+void SettingsViewModel::applyBtcSettingsEL()
+{
+    bitcoin::ElectrumSettings electrumSettings;
+    
+    if (!m_bitcoinNodeAddressEl.isEmpty())
+    {
+        electrumSettings.m_address = m_bitcoinNodeAddressEl.toStdString();
+    }
+
+    if (!m_bitcoinSeedEl.isEmpty())
+    {
+        auto tempPhrase = m_bitcoinSeedEl.toStdString();
+        boost::algorithm::trim_if(tempPhrase, [](char ch) { return ch == ' '; });
+        electrumSettings.m_secretWords = string_helpers::split(tempPhrase, ' ');
+    }
+
+    electrumSettings.m_addressVersion = bitcoin::getAddressVersion();
+
+    m_bitcoinSettings = bitcoin::Settings();
+
+    m_bitcoinSettings->SetElectrumConnectionOptions(electrumSettings);
+    m_bitcoinSettings->SetFeeRate(m_bitcoinFeeRateEl);
+
+    AppModel::getInstance().getBitcoinClient()->SetSettings(*m_bitcoinSettings);
+    SetDefaultBtcSettings();
+}
+
+void SettingsViewModel::btcOffEL()
+{
+    SetDefaultBtcSettingsEL();
+    AppModel::getInstance().getBitcoinClient()->GetAsync()->ResetSettings();
+}
+
+QString SettingsViewModel::getLtcSeedEL() const
+{
+    return m_litecoinSeedEl;
+}
+
+void SettingsViewModel::setLtcSeedEL(const QString& value)
+{
+    if (m_litecoinSeedEl != value)
+    {
+        m_litecoinSeedEl = value;
+        emit ltcSeedELChanged();
+        emit propertiesChanged();
+    }
+}
+
+QString SettingsViewModel::getLtcNodeAddressEL() const
+{
+    return m_litecoinNodeAddressEl;
+}
+
+void SettingsViewModel::setLtcNodeAddressEL(const QString& value)
+{
+    if (m_litecoinNodeAddressEl != value)
+    {
+        m_litecoinNodeAddressEl = value;
+        emit ltcNodeAddressELChanged();
+        emit propertiesChanged();
+    }
+}
+
+int SettingsViewModel::getLtcFeeRateEL() const
+{
+    return m_litecoinFeeRateEl;
+}
+
+
+void SettingsViewModel::setLtcFeeRateEL(int value)
+{
+    if (m_litecoinFeeRateEl != value)
+    {
+        m_litecoinFeeRateEl = value;
+        emit ltcFeeRateELChanged();
+        emit propertiesChanged();
+    }
+}
+
+void SettingsViewModel::SettingsViewModel::applyLtcSettingsEL()
+{
+    litecoin::ElectrumSettings electrumSettings;
+
+    if (!m_litecoinNodeAddressEl.isEmpty())
+    {
+        electrumSettings.m_address = m_litecoinNodeAddressEl.toStdString();
+    }
+
+    if (!m_litecoinSeedEl.isEmpty())
+    {
+        auto tempPhrase = m_litecoinSeedEl.toStdString();
+        boost::algorithm::trim_if(tempPhrase, [](char ch) { return ch == ' '; });
+        electrumSettings.m_secretWords = string_helpers::split(tempPhrase, ' ');
+    }
+
+    electrumSettings.m_addressVersion = litecoin::getAddressVersion();
+
+    m_litecoinSettings = litecoin::Settings();
+
+    m_litecoinSettings->SetElectrumConnectionOptions(electrumSettings);
+    m_litecoinSettings->SetFeeRate(m_bitcoinFeeRateEl);
+
+    AppModel::getInstance().getLitecoinClient()->SetSettings(*m_litecoinSettings);
+    SetDefaultLtcSettings();
+}
+
+void SettingsViewModel::ltcOffEL()
+{
+    SetDefaultLtcSettingsEL();
+    AppModel::getInstance().getLitecoinClient()->GetAsync()->ResetSettings();
+}
+
+void SettingsViewModel::SettingsViewModel::applyQtumSettingsEL()
+{
+    qtum::ElectrumSettings electrumSettings;
+
+    if (!m_qtumNodeAddressEl.isEmpty())
+    {
+        electrumSettings.m_address = m_qtumNodeAddressEl.toStdString();
+    }
+
+    if (!m_qtumSeedEl.isEmpty())
+    {
+        auto tempPhrase = m_qtumSeedEl.toStdString();
+        boost::algorithm::trim_if(tempPhrase, [](char ch) { return ch == ' '; });
+        electrumSettings.m_secretWords = string_helpers::split(tempPhrase, ' ');
+    }
+
+    electrumSettings.m_addressVersion = qtum::getAddressVersion();
+
+    m_qtumSettings = qtum::Settings();
+
+    m_qtumSettings->SetElectrumConnectionOptions(electrumSettings);
+    m_qtumSettings->SetFeeRate(m_bitcoinFeeRateEl);
+
+    AppModel::getInstance().getQtumClient()->SetSettings(*m_qtumSettings);
+    SetDefaultQtumSettings();
+}
+
+QString SettingsViewModel::getQtumSeedEL() const
+{
+    return m_qtumSeedEl;
+}
+
+void SettingsViewModel::setQtumSeedEL(const QString& value)
+{
+    if (m_qtumSeedEl != value)
+    {
+        m_qtumSeedEl = value;
+        emit qtumSeedELChanged();
+        emit propertiesChanged();
+    }
+}
+
+QString SettingsViewModel::getQtumNodeAddressEL() const
+{
+    return m_qtumNodeAddressEl;
+}
+
+void SettingsViewModel::setQtumNodeAddressEL(const QString& value)
+{
+    if (m_qtumNodeAddressEl != value)
+    {
+        m_qtumNodeAddressEl = value;
+        emit qtumNodeAddressELChanged();
+        emit propertiesChanged();
+    }
+}
+
+int SettingsViewModel::getQtumFeeRateEL() const
+{
+    return m_qtumFeeRateEl;
+}
+
+void SettingsViewModel::setQtumFeeRateEL(int value)
+{
+    if (m_qtumFeeRateEl != value)
+    {
+        m_qtumFeeRateEl = value;
+        emit qtumFeeRateELChanged();
+        emit propertiesChanged();
+    }
+}
+
+void SettingsViewModel::qtumOffEL()
+{
+    SetDefaultQtumSettingsEL();
+    AppModel::getInstance().getQtumClient()->GetAsync()->ResetSettings();
+}
+
+void SettingsViewModel::btcNewSeedEL()
+{
+    auto secretWords = bitcoin::createElectrumMnemonic(getEntropy());
+
+    setBtcSeedEL(str2qstr(vec2str(secretWords)));
+}
+
+void SettingsViewModel::ltcNewSeedEL()
+{
+    auto secretWords = bitcoin::createElectrumMnemonic(getEntropy());
+
+    setLtcSeedEL(str2qstr(vec2str(secretWords)));
+}
+
+void SettingsViewModel::qtumNewSeedEL()
+{
+    auto secretWords = bitcoin::createElectrumMnemonic(getEntropy());
+
+    setQtumSeedEL(str2qstr(vec2str(secretWords)));
+}
+
+bool SettingsViewModel::getBtcUseEL() const
+{
+    return m_btcUseEL;
+}
+
+void SettingsViewModel::setBtcUseEL(bool value)
+{
+    if (m_btcUseEL != value)
+    {
+        m_btcUseEL = value;
+        emit btcUseELChanged();
+    }
+}
+
+bool SettingsViewModel::getLtcUseEL() const
+{
+    return m_ltcUseEL;
+}
+
+void SettingsViewModel::setLtcUseEL(bool value)
+{
+    if (m_ltcUseEL != value)
+    {
+        m_ltcUseEL = value;
+        emit ltcUseELChanged();
+    }
+}
+
+bool SettingsViewModel::getQtumUseEL() const
+{
+    return m_qtumUseEL;
+}
+
+void SettingsViewModel::setQtumUseEL(bool value)
+{
+    if (m_qtumUseEL != value)
+    {
+        m_qtumUseEL = value;
+        emit qtumUseELChanged();
+    }
+}
+
 
 bool SettingsViewModel::isLocalNodeRunning() const
 {
@@ -642,27 +919,114 @@ void SettingsViewModel::timerEvent(QTimerEvent *event)
 
 void SettingsViewModel::LoadBitcoinSettings()
 {
+    SetDefaultBtcSettingsEL();
+    SetDefaultBtcSettings();
+
     m_bitcoinSettings = AppModel::getInstance().getBitcoinClient()->GetSettings();
-    setBtcUser(str2qstr(m_bitcoinSettings->GetConnectionOptions().m_userName));
-    setBtcPass(str2qstr(m_bitcoinSettings->GetConnectionOptions().m_pass));
-    setBtcNodeAddress(AddressToQstring(m_bitcoinSettings->GetConnectionOptions().m_address));
-    setBtcFeeRate(m_bitcoinSettings->GetFeeRate());
+
+    if (m_bitcoinSettings->GetConnectionOptions().IsInitialized())
+    {
+        setBtcUser(str2qstr(m_bitcoinSettings->GetConnectionOptions().m_userName));
+        setBtcPass(str2qstr(m_bitcoinSettings->GetConnectionOptions().m_pass));
+        setBtcNodeAddress(AddressToQstring(m_bitcoinSettings->GetConnectionOptions().m_address));
+        setBtcFeeRate(m_bitcoinSettings->GetFeeRate());
+    }
+    else if (m_bitcoinSettings->GetElectrumConnectionOptions().IsInitialized())
+    {
+        setBtcUseEL(true);
+        setBtcSeedEL(str2qstr(vec2str(m_bitcoinSettings->GetElectrumConnectionOptions().m_secretWords)));
+        setBtcNodeAddressEL(str2qstr(m_bitcoinSettings->GetElectrumConnectionOptions().m_address));
+        setBtcFeeRateEL(m_bitcoinSettings->GetFeeRate());
+    }
 }
 
 void SettingsViewModel::LoadLitecoinSettings()
 {
+    SetDefaultLtcSettingsEL();
+    SetDefaultLtcSettings();
+
     m_litecoinSettings = AppModel::getInstance().getLitecoinClient()->GetSettings();
-    setLtcUser(str2qstr(m_litecoinSettings->GetConnectionOptions().m_userName));
-    setLtcPass(str2qstr(m_litecoinSettings->GetConnectionOptions().m_pass));
-    setLtcNodeAddress(AddressToQstring(m_litecoinSettings->GetConnectionOptions().m_address));
-    setLtcFeeRate(m_litecoinSettings->GetFeeRate());
+
+    if (m_litecoinSettings->GetConnectionOptions().IsInitialized())
+    {
+        setLtcUser(str2qstr(m_litecoinSettings->GetConnectionOptions().m_userName));
+        setLtcPass(str2qstr(m_litecoinSettings->GetConnectionOptions().m_pass));
+        setLtcNodeAddress(AddressToQstring(m_litecoinSettings->GetConnectionOptions().m_address));
+        setLtcFeeRate(m_litecoinSettings->GetFeeRate());
+    }
+    else if (m_litecoinSettings->GetElectrumConnectionOptions().IsInitialized())
+    {
+        setLtcUseEL(true);
+        setLtcSeedEL(str2qstr(vec2str(m_litecoinSettings->GetElectrumConnectionOptions().m_secretWords)));
+        setLtcNodeAddressEL(str2qstr(m_litecoinSettings->GetElectrumConnectionOptions().m_address));
+        setLtcFeeRateEL(m_litecoinSettings->GetFeeRate());
+    }
 }
 
 void SettingsViewModel::LoadQtumSettings()
 {
+    SetDefaultQtumSettingsEL();
+    SetDefaultQtumSettings();
+
     m_qtumSettings = AppModel::getInstance().getQtumClient()->GetSettings();
-    setQtumUser(str2qstr(m_qtumSettings->GetConnectionOptions().m_userName));
-    setQtumPass(str2qstr(m_qtumSettings->GetConnectionOptions().m_pass));
-    setQtumNodeAddress(AddressToQstring(m_qtumSettings->GetConnectionOptions().m_address));
-    setQtumFeeRate(m_qtumSettings->GetFeeRate());
+
+    if (m_qtumSettings->GetConnectionOptions().IsInitialized())
+    {
+        setQtumUser(str2qstr(m_qtumSettings->GetConnectionOptions().m_userName));
+        setQtumPass(str2qstr(m_qtumSettings->GetConnectionOptions().m_pass));
+        setQtumNodeAddress(AddressToQstring(m_qtumSettings->GetConnectionOptions().m_address));
+        setQtumFeeRate(m_qtumSettings->GetFeeRate());
+    }
+    else if (m_qtumSettings->GetElectrumConnectionOptions().IsInitialized())
+    {
+        setQtumUseEL(true);
+        setQtumSeedEL(str2qstr(vec2str(m_qtumSettings->GetElectrumConnectionOptions().m_secretWords)));
+        setQtumNodeAddressEL(str2qstr(m_qtumSettings->GetElectrumConnectionOptions().m_address));
+        setQtumFeeRateEL(m_qtumSettings->GetFeeRate());
+    }
+}
+
+void SettingsViewModel::SetDefaultBtcSettings()
+{
+    setBtcFeeRate(QMLGlobals::defFeeRateBtc());
+    setBtcNodeAddress("");
+    setBtcPass("");
+    setBtcUser("");
+}
+
+void SettingsViewModel::SetDefaultBtcSettingsEL()
+{
+    setBtcFeeRateEL(QMLGlobals::defFeeRateBtc());
+    setBtcNodeAddressEL("");
+    setBtcSeedEL("");
+}
+
+void SettingsViewModel::SetDefaultLtcSettings()
+{
+    setLtcFeeRate(QMLGlobals::defFeeRateLtc());
+    setLtcNodeAddress("");
+    setLtcPass("");
+    setLtcUser("");
+}
+
+void SettingsViewModel::SetDefaultLtcSettingsEL()
+{
+    setLtcFeeRateEL(QMLGlobals::defFeeRateLtc());
+    setLtcNodeAddressEL("");
+    setLtcSeedEL("");
+}
+
+void SettingsViewModel::SetDefaultQtumSettings()
+{
+    setQtumFeeRate(QMLGlobals::defFeeRateQtum());
+    setQtumNodeAddress("");
+    setQtumPass("");
+    setQtumUser("");
+}
+
+void SettingsViewModel::SetDefaultQtumSettingsEL()
+{
+    setQtumFeeRateEL(QMLGlobals::defFeeRateQtum());
+    setQtumNodeAddressEL("");
+    setQtumSeedEL("");
 }

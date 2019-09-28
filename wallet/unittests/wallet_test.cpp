@@ -220,7 +220,8 @@ namespace
             .SetParameter(TxParameterID::PeerID, receiver.m_WalletID)
             .SetParameter(TxParameterID::Amount, Amount(4))
             .SetParameter(TxParameterID::Fee, Amount(2))
-            .SetParameter(TxParameterID::Lifetime, Height(200)));
+            .SetParameter(TxParameterID::Lifetime, Height(200))
+            .SetParameter(TxParameterID::PeerResponseTime, Height(20)));
 
         mainReactor->run();
         sw.stop();
@@ -664,8 +665,8 @@ namespace
             .SetParameter(TxParameterID::PeerID, receiver.m_WalletID)
             .SetParameter(TxParameterID::Amount, Amount(4))
             .SetParameter(TxParameterID::Fee, Amount(2))
-            .SetParameter(TxParameterID::Lifetime, Height(1))
-            .SetParameter(TxParameterID::PeerResponseHeight, Height(10)));
+            .SetParameter(TxParameterID::Lifetime, Height(0))
+            .SetParameter(TxParameterID::PeerResponseTime, Height(10)));
 
         mainReactor->run();
 
@@ -724,7 +725,8 @@ namespace
         TestWalletRig receiver("receiver", createReceiverWalletDB());
 
         TxID txID = wallet::GenerateTxID();
-        SimpleTransaction::Creator creator;
+        SimpleTransaction::Creator simpleCreator(sender.m_WalletDB);
+        BaseTransaction::Creator& creator = simpleCreator;
         auto tx = creator.Create(gateway, sender.m_WalletDB, sender.m_KeyKeeper, txID);
 
         Height currentHeight = sender.m_WalletDB->getCurrentHeight();
@@ -774,7 +776,8 @@ namespace
         TestWalletRig receiver("receiver", createReceiverWalletDB());
         Height currentHeight = sender.m_WalletDB->getCurrentHeight();
 
-        SimpleTransaction::Creator txCreator;
+        SimpleTransaction::Creator simpleTxCreator(sender.m_WalletDB);
+        BaseTransaction::Creator& txCreator = simpleTxCreator;
         // process TransactionFailedException
         {
             struct TestGateway : EmptyTestGateway
@@ -1269,11 +1272,14 @@ namespace
         }
 
         int completedCount = 1;
-        auto f = [&completedCount, mainReactor](auto)
+
+        auto timer = io::Timer::create(io::Reactor::get_Current());
+        auto f = [&completedCount, mainReactor](auto txID)
         {
             --completedCount;
             if (completedCount == 0)
             {
+              //  timer->cancel();
                 mainReactor->stop();
             }
         };
@@ -1314,10 +1320,27 @@ namespace
                 .SetParameter(TxParameterID::PeerID, receiver.m_WalletID)
                 .SetParameter(TxParameterID::Amount, Amount(4))
                 .SetParameter(TxParameterID::Fee, Amount(1))
-                .SetParameter(TxParameterID::Lifetime, Height(200)));
+                .SetParameter(TxParameterID::Lifetime, Height(20))
+                .SetParameter(TxParameterID::PeerResponseTime, Height(100)));
         }
         
         mainReactor->run();
+
+        //
+        //for (const auto& p : txMap)
+        //{
+        //    if (p.second != 2)
+        //    {
+        //        cout << p.first << '\n';
+        //    }
+        //}
+
+        auto transactions = sender.m_WalletDB->getTxHistory();
+        WALLET_CHECK(transactions.size() == Count + 1);
+        for (const auto& t : transactions)
+        {
+            WALLET_CHECK(t.m_status == TxStatus::Completed);
+        }
     }
 
     void TestTxParameters()
@@ -1342,6 +1365,23 @@ namespace
         string address = to_string(myID);
         auto addrParams = wallet::ParseParameters(address);
         WALLET_CHECK(addrParams && *addrParams->GetParameter<WalletID>(TxParameterID::PeerID) == myID);
+
+        const string addresses[] =
+        {
+            "7a3b9afd0f6bba147a4e044329b135424ca3a57ab9982fe68747010a71e0cac3f3",
+            "9f03ab404a243fd09f827e8941e419e523a5b21e17c70563bfbc211dbe0e87ca95",
+            "0103ab404a243fd09f827e8941e419e523a5b21e17c70563bfbc211dbe0e87ca95",
+            "7f9f03ab404a243fd09f827e8941e419e523a5b21e17c70563bfbc211dbe0e87ca95",
+            "0f9f03ab404a243fd09f827e8941e419e523a5b21e17c70563bfbc211dbe0e87ca95"
+        };
+        for (const auto& a : addresses)
+        {
+            WalletID id(Zero);
+            WALLET_CHECK(id.FromHex(a));
+            boost::optional<TxParameters> p;
+            WALLET_CHECK_NO_THROW(p = wallet::ParseParameters(a));
+            WALLET_CHECK(p && *p->GetParameter<WalletID>(TxParameterID::PeerID) == id);
+        }
     }
 
     void TestConvertions()
@@ -2019,10 +2059,13 @@ int main()
 #if LOG_VERBOSE_ENABLED
     logLevel = LOG_LEVEL_VERBOSE;
 #endif
-    auto logger = beam::Logger::create(logLevel, logLevel);
+    const auto path = boost::filesystem::system_complete("logs");
+    auto logger = beam::Logger::create(logLevel, logLevel, logLevel, "wallet_test", path.string());
+
+
     Rules::get().FakePoW = true;
 	Rules::get().pForks[1].m_Height = 100500; // needed for lightning network to work
-    Rules::get().DA.MaxAhead_s = 60 * 1;
+    //Rules::get().DA.MaxAhead_s = 90;// 60 * 1;
     Rules::get().UpdateChecksum();
 
     TestConvertions();
@@ -2055,10 +2098,12 @@ int main()
     TestColdWalletReceiving();
 
     TestTxExceptionHandling();
-#if defined(BEAM_HW_WALLET)
-    TestHWCommitment();
-    TestHWWallet();
-#endif
+
+    // @nesbox: disabled tests, they work only if device connected
+//#if defined(BEAM_HW_WALLET)
+//    TestHWCommitment();
+//    TestHWWallet();
+//#endif
 
     //TestBbsMessages();
     //TestBbsMessages2();

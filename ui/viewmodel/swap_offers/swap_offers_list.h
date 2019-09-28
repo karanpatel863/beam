@@ -15,7 +15,7 @@
 #pragma once
 
 #include "swap_offer_item.h"
-#include "helpers/list_model.h"
+#include "viewmodel/helpers/list_model.h"
 
 class SwapOffersList : public ListModel<std::shared_ptr<SwapOfferItem>>
 {
@@ -25,22 +25,27 @@ class SwapOffersList : public ListModel<std::shared_ptr<SwapOfferItem>>
 public:
     enum class Roles
     {
-        TimeCreatedRole = Qt::UserRole + 1,
-        TimeCreatedSortRole,
-        AmountSendRole,
-        AmountSendSortRole,
-        AmountReceiveRole,
-        AmountReceiveSortRole,
-        RateRole,
-        RateSortRole,
-        ExpirationRole,
-        ExpirationSortRole,
-        IsOwnOfferRole,
-        RawTxParametersRole
+        TimeCreated = Qt::UserRole + 1,
+        TimeCreatedSort,
+        AmountSend,
+        AmountSendSort,
+        AmountReceive,
+        AmountReceiveSort,
+        Rate,
+        RateSort,
+        Expiration,
+        ExpirationSort,
+        SwapCoin,
+        IsOwnOffer,
+        IsBeamSide,
+        RawTxID,
+        RawTxParameters
     };
 
     SwapOffersList();
 
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+
+    void remove(const std::vector<std::shared_ptr<SwapOfferItem>>& items);
 };

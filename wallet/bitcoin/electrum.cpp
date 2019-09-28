@@ -192,6 +192,7 @@ namespace beam::bitcoin
                 return;
             }
 
+            auto privateKeys = generatePrivateKeyList();
             data_chunk txData;
             decode_base16(txData, rawTx);
             transaction tx = transaction::factory_from_data(txData);
@@ -209,14 +210,15 @@ namespace beam::bitcoin
                     if (coin.m_details["tx_hash"].get<std::string>() == strHash && coin.m_details["tx_pos"].get<uint32_t>() == index)
                     {
                         isFoundCoin = true;
-                        script lockingScript = script().to_pay_key_hash_pattern(coin.m_privateKey.to_public().to_payment_address(m_settingsProvider->GetElectrumSettings().m_addressVersion).hash());
+                        ec_private privateKey = privateKeys[coin.m_index];
+                        script lockingScript = script().to_pay_key_hash_pattern(privateKey.to_public().to_payment_address(m_settingsProvider->GetElectrumSettings().m_addressVersion).hash());
                         endorsement sig;
-                        if (lockingScript.create_endorsement(sig, coin.m_privateKey.secret(), lockingScript, tx, static_cast<uint32_t>(ind), machine::sighash_algorithm::all))
+                        if (lockingScript.create_endorsement(sig, privateKey.secret(), lockingScript, tx, static_cast<uint32_t>(ind), machine::sighash_algorithm::all))
                         {
                             script::operation::list sigScript;
                             sigScript.push_back(script::operation(sig));
                             data_chunk tmp;
-                            coin.m_privateKey.to_public().to_data(tmp);
+                            privateKey.to_public().to_data(tmp);
                             sigScript.push_back(script::operation(tmp));
                             script unlockingScript(sigScript);
 
@@ -439,7 +441,7 @@ namespace beam::bitcoin
 
     void Electrum::getDetailedBalance(std::function<void(const Error&, double, double, double)> callback)
     {
-        LOG_DEBUG() << "getDetailedBalance command";
+        //LOG_DEBUG() << "getDetailedBalance command";
 
         size_t index = 0;
         double confirmed = 0;
@@ -501,16 +503,12 @@ namespace beam::bitcoin
             {
                 TCPConnect& connection = m_connections[tag];
 
-                {
-                    payment_address addr(privateKeys[index].to_public().to_payment_address(addressVersion));
-                    LOG_INFO() << "address = " << addr.encoded();
-                }
                 try
                 {
                     for (auto utxo : result)
                     {
                         Utxo coin;
-                        coin.m_privateKey = privateKeys[index];
+                        coin.m_index = index;
                         coin.m_details = utxo;
                         coins.push_back(coin);
                     }
@@ -552,21 +550,40 @@ namespace beam::bitcoin
 
         //LOG_INFO() << request;
 
-        uint64_t currentTag = m_tagCounter++;
-        TCPConnect& connection = m_connections[currentTag];
+        uint64_t currentId = m_idCounter++;
+        TCPConnect& connection = m_connections[currentId];
         connection.m_request = request;
         connection.m_callback = callback;
 
-        m_reactor.tcp_connect(m_settingsProvider->GetElectrumSettings().m_address, currentTag, [this](uint64_t tag, std::unique_ptr<TcpStream>&& newStream, ErrorCode status)
+        io::Address address;
+        if (!address.resolve(m_settingsProvider->GetElectrumSettings().m_address.c_str()))
         {
+            // TODO process error
+            LOG_ERROR() << "unable to resolve electrum address: " << m_settingsProvider->GetElectrumSettings().m_address;
+            return;
+        }
+
+        auto tag = uint64_t(&connection);
+        m_reactor.tcp_connect(address, tag, [this, currentId, weak = this->weak_from_this()](uint64_t tag, std::unique_ptr<TcpStream>&& newStream, ErrorCode status)
+        {
+            if (weak.expired())
+            {
+                return;
+            }
+
             if (newStream) {
                 assert(status == EC_OK);
-                TCPConnect& connection = m_connections[tag];
+                TCPConnect& connection = m_connections[currentId];
 
                 connection.m_stream = std::move(newStream);
 
-                connection.m_stream->enable_read([this, tag](ErrorCode what, void* data, size_t size) -> bool
+                connection.m_stream->enable_read([this, weak, currentId](ErrorCode what, void* data, size_t size) -> bool
                 {
+                    if (weak.expired())
+                    {
+                        return false;
+                    }
+
                     bool isFinished = true;
                     Error error{ None, "" };
                     json result;
@@ -607,12 +624,12 @@ namespace beam::bitcoin
                             error.m_message = "Empty response.";
                         }
 
-                        TCPConnect& connection = m_connections[tag];
-                        isFinished = !connection.m_callback(error, result, tag);
+                        TCPConnect& connection = m_connections[currentId];
+                        isFinished = !connection.m_callback(error, result, currentId);
                     }
                     if (isFinished)
                     {
-                        m_connections.erase(tag);
+                        m_connections.erase(currentId);
                         return false;
                     }
                     return true;
@@ -664,8 +681,11 @@ namespace beam::bitcoin
         word_list seedPhrase(m_settingsProvider->GetElectrumSettings().m_secretWords);
         auto hd_seed = electrum::decode_mnemonic(seedPhrase);
         data_chunk seed_chunk(to_chunk(hd_seed));
-        hd_private masterPrivateKey(seed_chunk,
-            m_settingsProvider->GetElectrumSettings().m_isMainnet ? hd_public::mainnet : hd_public::testnet);
+#ifdef BEAM_MAINNET
+        hd_private masterPrivateKey(seed_chunk, hd_public::mainnet);
+#else
+        hd_private masterPrivateKey(seed_chunk, hd_public::testnet);
+#endif
 
         return std::make_pair(masterPrivateKey.derive_private(0), masterPrivateKey.derive_private(1));
     }

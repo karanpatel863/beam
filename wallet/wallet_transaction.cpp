@@ -14,6 +14,7 @@
 
 #include "wallet_transaction.h"
 #include "base_tx_builder.h"
+#include "wallet.h"
 #include "core/block_crypt.h"
 
 #include <numeric>
@@ -38,12 +39,52 @@ namespace beam::wallet
             .SetParameter(TxParameterID::Amount, std::accumulate(amountList.begin(), amountList.end(), Amount(0)));
     }
 
+    SimpleTransaction::Creator::Creator(IWalletDB::Ptr walletDB)
+        : m_WalletDB(walletDB)
+    {
+
+    }
+
     BaseTransaction::Ptr SimpleTransaction::Creator::Create(INegotiatorGateway& gateway
                                                           , IWalletDB::Ptr walletDB
                                                           , IPrivateKeyKeeper::Ptr keyKeeper
                                                           , const TxID& txID)
     {
         return BaseTransaction::Ptr(new SimpleTransaction(gateway, walletDB, keyKeeper, txID));
+    }
+
+    TxParameters SimpleTransaction::Creator::CheckAndCompleteParameters(const TxParameters& parameters)
+    {
+        auto peerID = parameters.GetParameter<WalletID>(TxParameterID::PeerID);
+        if (!peerID)
+        {
+            throw InvalidTransactionParametersException();
+        }
+        auto receiverAddr = m_WalletDB->getAddress(*peerID);
+        if (receiverAddr)
+        {
+            if (receiverAddr->m_OwnID && receiverAddr->isExpired())
+            {
+                LOG_INFO() << "Can't send to the expired address.";
+                throw AddressExpiredException();
+            }
+            TxParameters temp{ parameters };
+            temp.SetParameter(TxParameterID::IsSelfTx, receiverAddr->m_OwnID != 0);
+            return temp;
+        }
+        else
+        {
+            WalletAddress address;
+            address.m_walletID = *peerID;
+            address.m_createTime = getTimestamp();
+            if (auto message = parameters.GetParameter(TxParameterID::Message); message)
+            {
+                address.m_label = std::string(message->begin(), message->end());
+            }
+
+            m_WalletDB->saveAddress(address);
+        }
+        return parameters;
     }
 
     SimpleTransaction::SimpleTransaction(INegotiatorGateway& gateway

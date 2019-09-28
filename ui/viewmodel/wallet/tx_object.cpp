@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "tx_object.h"
-#include "ui_helpers.h"
+#include "viewmodel/ui_helpers.h"
 
 using namespace beam;
 using namespace beam::wallet;
 using namespace beamui;
 
-TxObject::TxObject(QObject* parent /*= nullptr*/)
+TxObject::TxObject(QObject* parent)
         : QObject(parent)
 {
 }
@@ -26,110 +26,165 @@ TxObject::TxObject(QObject* parent /*= nullptr*/)
 TxObject::TxObject(const TxDescription& tx, QObject* parent/* = nullptr*/)
         : QObject(parent)
         , m_tx(tx)
+        , m_type(*m_tx.GetParameter<TxType>(TxParameterID::TransactionType))
 {
     auto kernelID = QString::fromStdString(to_hex(m_tx.m_kernelID.m_pData, m_tx.m_kernelID.nBytes));
     setKernelID(kernelID);
 }
 
-bool TxObject::income() const
+auto TxObject::timeCreated() const -> QDateTime
+{
+	QDateTime datetime;
+	datetime.setTime_t(m_tx.m_createTime);
+	return datetime;
+}
+
+auto TxObject::getTxID() const -> beam::wallet::TxID
+{
+    return m_tx.m_txId;
+}
+
+auto TxObject::isBeamSideSwap() const -> bool
+{
+    auto isBeamSide = m_tx.GetParameter<bool>(TxParameterID::AtomicSwapIsBeamSide);
+    if (isBeamSide)
+    {
+        return isBeamSide.value();
+    }
+    else return false;    
+}
+
+auto TxObject::getSwapCoinName() const -> QString
+{
+    beam::wallet::AtomicSwapCoin coin;
+    if (m_tx.GetParameter(TxParameterID::AtomicSwapCoin, coin))
+    {
+        switch (coin)
+        {
+            case AtomicSwapCoin::Bitcoin:   return toString(beamui::Currencies::Bitcoin);
+            case AtomicSwapCoin::Litecoin:  return toString(beamui::Currencies::Litecoin);
+            case AtomicSwapCoin::Qtum:      return toString(beamui::Currencies::Qtum);
+            case AtomicSwapCoin::Unknown:   return toString(beamui::Currencies::Unknown);
+        }
+    }
+    return QString("unknown");
+}
+
+bool TxObject::isIncome() const
 {
     return m_tx.m_sender == false;
 }
 
-QString TxObject::date() const
-{
-    return toString(m_tx.m_createTime);
-}
-
-QString TxObject::userName() const
-{
-    return m_userName;
-}
-
-QString TxObject::displayName() const
-{
-    return m_displayName;
-}
-
-QString TxObject::comment() const
+QString TxObject::getComment() const
 {
     std::string str{ m_tx.m_message.begin(), m_tx.m_message.end() };
     return QString(str.c_str()).trimmed();
 }
 
+QString TxObject::getAmount() const
+{
+    return AmountToString(m_tx.m_amount, Currencies::Beam);
+}
+
+double TxObject::getAmountValue() const
+{
+    return m_tx.m_amount;
+}
+
 QString TxObject::getSentAmount() const
 {
-    return m_tx.m_sender ? AmountToString(m_tx.m_amount, Currencies::Beam) : "";
+    if (m_type == TxType::AtomicSwap)
+    {
+        return getSwapAmount(true);
+    }
+    return m_tx.m_sender ? getAmount() : "";
 }
 
 double TxObject::getSentAmountValue() const
 {
+    if (m_type == TxType::AtomicSwap)
+    {
+        return getSwapAmountValue(true);
+    }
+
     return m_tx.m_sender ? m_tx.m_amount : 0;
 }
 
 QString TxObject::getReceivedAmount() const
 {
-    return !m_tx.m_sender ? AmountToString(m_tx.m_amount, Currencies::Beam) : "";
+    if (m_type == TxType::AtomicSwap)
+    {
+        return getSwapAmount(false);
+    }
+    return !m_tx.m_sender ? getAmount() : "";
 }
 
 double TxObject::getReceivedAmountValue() const
 {
+    if (m_type == TxType::AtomicSwap)
+    {
+        return getSwapAmountValue(false);
+    }
+
     return !m_tx.m_sender ? m_tx.m_amount : 0;
 }
 
-QString TxObject::change() const
+QString TxObject::getSwapAmount(bool sent) const
 {
-    if (m_tx.m_change)
+    auto isBeamSide = m_tx.GetParameter<bool>(TxParameterID::AtomicSwapIsBeamSide);
+    if (!isBeamSide)
     {
-        return AmountToString(m_tx.m_change, Currencies::Beam);
+        return "";
     }
-    return QString{};
+
+    bool s = sent ? !*isBeamSide : *isBeamSide;
+    if (s)
+    {
+        auto swapAmount = m_tx.GetParameter<Amount>(TxParameterID::AtomicSwapAmount);
+        auto swapCoin = m_tx.GetParameter<AtomicSwapCoin>(TxParameterID::AtomicSwapCoin);
+        return AmountToString(*swapAmount, beamui::convertSwapCoinToCurrency(*swapCoin));
+    }
+    return getAmount();
 }
 
-QString TxObject::status() const
+double TxObject::getSwapAmountValue(bool sent) const
+{
+    auto isBeamSide = m_tx.GetParameter<bool>(TxParameterID::AtomicSwapIsBeamSide);
+    if (!isBeamSide)
+    {
+        return 0.0;
+    }
+
+    bool s = sent ? !*isBeamSide : *isBeamSide;
+    if (s)
+    {
+        auto swapAmount = m_tx.GetParameter<Amount>(TxParameterID::AtomicSwapAmount);
+        return *swapAmount;
+    }
+    return m_tx.m_amount;
+}
+
+QString TxObject::getStatus() const
 {
     return m_tx.getStatusString().c_str();
 }
 
-bool TxObject::canCancel() const
+bool TxObject::isCancelAvailable() const
 {
     return m_tx.canCancel();
 }
 
-bool TxObject::canDelete() const
+bool TxObject::isDeleteAvailable() const
 {
     return m_tx.canDelete();
 }
 
-void TxObject::setUserName(const QString& name)
-{
-    if (m_userName != name)
-    {
-        m_userName = name;
-        emit displayNameChanged();
-    }
-}
-
-void TxObject::setDisplayName(const QString& name)
-{
-    if (m_displayName != name)
-    {
-        m_displayName = name;
-        emit displayNameChanged();
-    }
-}
-
-beam::wallet::WalletID TxObject::peerId() const
-{
-    return m_tx.m_peerId;
-}
-
-QString TxObject::getSendingAddress() const
+QString TxObject::getAddressFrom() const
 {
     return toString(m_tx.m_sender ? m_tx.m_myId : m_tx.m_peerId);
 }
 
-QString TxObject::getReceivingAddress() const
+QString TxObject::getAddressTo() const
 {
     return toString(!m_tx.m_sender ? m_tx.m_myId : m_tx.m_peerId);
 }
@@ -250,7 +305,7 @@ void TxObject::setFailureReason(beam::wallet::TxFailureReason reason)
 
 bool TxObject::hasPaymentProof() const
 {
-    return !income() && m_tx.m_status == TxStatus::Completed;
+    return !isIncome() && m_tx.m_status == TxStatus::Completed;
 }
 
 void TxObject::update(const beam::wallet::TxDescription& tx)
@@ -261,7 +316,7 @@ void TxObject::update(const beam::wallet::TxDescription& tx)
     setFailureReason(tx.m_failureReason);
 }
 
-bool TxObject::inProgress() const
+bool TxObject::isInProgress() const
 {
     switch (m_tx.m_status)
     {
@@ -283,10 +338,3 @@ bool TxObject::isSelfTx() const
 {
     return m_tx.m_selfTx;
 }
-
-PaymentInfoItem* TxObject::getPaymentInfo()
-{
-    return new MyPaymentInfoItem(m_tx.m_txId, this);
-}
-
-

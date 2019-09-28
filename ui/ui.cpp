@@ -26,10 +26,10 @@
 #include "viewmodel/utxo_view.h"
 #include "viewmodel/utxo_view_status.h"
 #include "viewmodel/utxo_view_type.h"
-#include "viewmodel/swap_offers_view.h"
+#include "viewmodel/swap_offers/swap_offers_view.h"
 #include "viewmodel/dashboard_view.h"
 #include "viewmodel/address_book_view.h"
-#include "viewmodel/wallet_view.h"
+#include "viewmodel/wallet/wallet_view.h"
 #include "viewmodel/notifications_view.h"
 #include "viewmodel/help_view.h"
 #include "viewmodel/settings_view.h"
@@ -40,6 +40,7 @@
 #include "viewmodel/receive_swap_view.h"
 #include "viewmodel/send_view.h"
 #include "viewmodel/send_swap_view.h"
+#include "viewmodel/el_seed_validator.h"
 #include "viewmodel/currencies.h"
 #include "model/app_model.h"
 #include "viewmodel/qml_globals.h"
@@ -230,10 +231,10 @@ int main (int argc, char* argv[])
             qmlRegisterType<ReceiveSwapViewModel>("Beam.Wallet", 1, 0, "ReceiveSwapViewModel");
             qmlRegisterType<SendViewModel>("Beam.Wallet", 1, 0, "SendViewModel");
             qmlRegisterType<SendSwapViewModel>("Beam.Wallet", 1, 0, "SendSwapViewModel");
+            qmlRegisterType<ELSeedValidator>("Beam.Wallet", 1, 0, "ELSeedValidator");
 
             qmlRegisterType<AddressItem>("Beam.Wallet", 1, 0, "AddressItem");
             qmlRegisterType<ContactItem>("Beam.Wallet", 1, 0, "ContactItem");
-            qmlRegisterType<TxObject>("Beam.Wallet", 1, 0, "TxObject");
             qmlRegisterType<UtxoItem>("Beam.Wallet", 1, 0, "UtxoItem");
             qmlRegisterType<PaymentInfoItem>("Beam.Wallet", 1, 0, "PaymentInfoItem");
             qmlRegisterType<WalletDBPathItem>("Beam.Wallet", 1, 0, "WalletDBPathItem");

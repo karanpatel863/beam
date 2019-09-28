@@ -107,6 +107,12 @@ namespace beam::wallet
         , m_settingsProvider(settingsProvider)
         , m_isBtcOwner(!isBeamSide)
     {
+        m_settingsProvider->AddRef();
+    }
+
+    BitcoinSide::~BitcoinSide()
+    {
+        m_settingsProvider->Release();
     }
 
     bool BitcoinSide::Initialize()
@@ -195,6 +201,42 @@ namespace beam::wallet
         return true;
     }
 
+    bool BitcoinSide::ConfirmRefundTx()
+    {
+        // wait TxID from peer
+        std::string txID;
+        if (!m_tx.GetParameter(TxParameterID::AtomicSwapExternalTxID, txID, SubTxIndex::REFUND_TX))
+            return false;
+
+        if (m_RefundTxConfirmations < GetTxMinConfirmations())
+        {
+            // validate expired?
+
+            GetRefundTxConfirmations();
+            return false;
+        }
+
+        return true;
+    }
+
+    bool BitcoinSide::ConfirmRedeemTx()
+    {
+        // wait TxID from peer
+        std::string txID;
+        if (!m_tx.GetParameter(TxParameterID::AtomicSwapExternalTxID, txID, SubTxIndex::REDEEM_TX))
+            return false;
+
+        if (m_RedeemTxConfirmations < GetTxMinConfirmations())
+        {
+            // validate expired?
+
+            GetRedeemTxConfirmations();
+            return false;
+        }
+
+        return true;
+    }
+
     bool BitcoinSide::SendLockTx()
     {
         auto lockTxState = BuildLockTx();
@@ -257,7 +299,7 @@ namespace beam::wallet
 
     uint8_t BitcoinSide::GetAddressVersion() const
     {
-        return bitcoin::getAddressVersion(IsMainnet());
+        return bitcoin::getAddressVersion();
     }
 
     Amount BitcoinSide::GetFeeRate() const
@@ -288,11 +330,6 @@ namespace beam::wallet
     uint32_t BitcoinSide::GetLockTimeInBlocks() const
     {
         return m_settingsProvider->GetSettings().GetLockTimeInBlocks();
-    }
-
-    bool BitcoinSide::IsMainnet() const
-    {
-        return m_settingsProvider->GetSettings().GetChainType() == wallet::SwapSecondSideChainType::Mainnet;
     }
 
     bool BitcoinSide::LoadSwapAddress()
@@ -343,6 +380,7 @@ namespace beam::wallet
 
                     if (!txID.empty())
                     {
+                        m_tx.SetParameter(TxParameterID::Confirmations, 0, false, subTxID);
                         m_tx.SetParameter(TxParameterID::AtomicSwapExternalTxID, txID, false, subTxID);
                     }
 
@@ -469,6 +507,48 @@ namespace beam::wallet
             if (!weak.expired())
             {
                 OnGetSwapLockTxConfirmations(error, hexScript, amount, confirmations);
+            }
+        });
+    }
+
+    void BitcoinSide::GetRefundTxConfirmations()
+    {
+        auto txID = m_tx.GetMandatoryParameter<std::string>(TxParameterID::AtomicSwapExternalTxID, SubTxIndex::REFUND_TX);
+        uint32_t outputIndex = 0;
+
+        m_bitcoinBridge->getTxOut(txID, outputIndex, [this, weak = this->weak_from_this()](const bitcoin::IBridge::Error& /*error*/, const std::string& /*hexScript*/, double /*amount*/, uint32_t confirmations)
+        {
+            if (!weak.expired())
+            {
+                // TODO should to processed error variable
+                if (m_RefundTxConfirmations != confirmations)
+                {
+                    LOG_DEBUG() << m_tx.GetTxID() << "[" << static_cast<SubTxID>(SubTxIndex::REFUND_TX) << "] " << confirmations << "/"
+                        << GetTxMinConfirmations() << " confirmations are received.";
+                    m_RefundTxConfirmations = confirmations;
+                    m_tx.SetParameter(TxParameterID::Confirmations, m_RefundTxConfirmations, true, SubTxIndex::REFUND_TX);
+                }
+            }
+        });
+    }
+
+    void BitcoinSide::GetRedeemTxConfirmations()
+    {
+        auto txID = m_tx.GetMandatoryParameter<std::string>(TxParameterID::AtomicSwapExternalTxID, SubTxIndex::REDEEM_TX);
+        uint32_t outputIndex = 0;
+
+        m_bitcoinBridge->getTxOut(txID, outputIndex, [this, weak = this->weak_from_this()](const bitcoin::IBridge::Error& /*error*/, const std::string& /*hexScript*/, double /*amount*/, uint32_t confirmations)
+        {
+            if (!weak.expired())
+            {
+                // TODO should to processed error variable
+                if (m_RedeemTxConfirmations != confirmations)
+                {
+                    LOG_DEBUG() << m_tx.GetTxID() << "[" << static_cast<SubTxID>(SubTxIndex::REDEEM_TX) << "] " << confirmations << "/"
+                        << GetTxMinConfirmations() << " confirmations are received.";
+                    m_RedeemTxConfirmations = confirmations;
+                    m_tx.SetParameter(TxParameterID::Confirmations, m_RedeemTxConfirmations, true, SubTxIndex::REDEEM_TX);
+                }
             }
         });
     }
@@ -754,6 +834,7 @@ namespace beam::wallet
                 LOG_DEBUG() << m_tx.GetTxID() << "[" << static_cast<SubTxID>(SubTxIndex::LOCK_TX) << "] " << confirmations << "/"
                     << GetTxMinConfirmations() << " confirmations are received.";
                 m_SwapLockTxConfirmations = confirmations;
+                m_tx.SetParameter(TxParameterID::Confirmations, m_SwapLockTxConfirmations, true, SubTxIndex::LOCK_TX);
             }
         }
         catch (const TransactionFailedException& ex)

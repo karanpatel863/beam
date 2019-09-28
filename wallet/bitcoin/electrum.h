@@ -17,19 +17,24 @@
 #include "bridge.h"
 #include "settings_provider.h"
 
-#include "bitcoin/bitcoin.hpp"
-
 #include "nlohmann/json.hpp"
+
+#include <memory>
 
 namespace beam::io
 {
     class TcpStream;
 }
 
+namespace libbitcoin::wallet
+{
+    class ec_private;
+    class hd_private;
+}
+
 namespace beam::bitcoin
 {
-    // TODO roman.strilets maybe should to use std::enable_shared_from_this
-    class Electrum : public IBridge
+    class Electrum : public IBridge, public std::enable_shared_from_this<Electrum>
     {
     private:
         struct TCPConnect
@@ -41,7 +46,7 @@ namespace beam::bitcoin
 
         struct Utxo
         {
-            libbitcoin::wallet::ec_private m_privateKey;
+            size_t m_index;
             nlohmann::json m_details;
         };
 
@@ -67,9 +72,8 @@ namespace beam::bitcoin
 
         void getDetailedBalance(std::function<void(const Error&, double, double, double)> callback) override;
 
-        void listUnspent(std::function<void(const Error&, const std::vector<Utxo>&)> callback);
-
     protected:
+        void listUnspent(std::function<void(const Error&, const std::vector<Utxo>&)> callback);
 
         void sendRequest(const std::string& method, const std::string& params, std::function<bool(const Error&, const nlohmann::json&, uint64_t)> callback);
 
@@ -86,7 +90,7 @@ namespace beam::bitcoin
     private:
         beam::io::Reactor& m_reactor;
         std::map<uint64_t, TCPConnect> m_connections;
-        uint64_t m_tagCounter = 0;
+        uint64_t m_idCounter = 0;
         uint32_t m_currentReceivingAddress = 0;
         IElectrumSettingsProvider::Ptr m_settingsProvider;
     };

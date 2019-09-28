@@ -15,8 +15,8 @@
 #pragma once
 
 #include <boost/program_options.hpp>
-#include "core/ecc.h"
 #include "utility/logger.h"
+#include "wallet/secstring.h"
 
 namespace beam
 {
@@ -62,7 +62,6 @@ namespace beam
         extern const char* LISTEN;
         extern const char* TREASURY;
         extern const char* TREASURY_BLOCK;
-        extern const char* RESYNC;
         extern const char* RESET_ID;
         extern const char* ERASE_ID;
         extern const char* CHECKDB;
@@ -117,8 +116,7 @@ namespace beam
         extern const char* IMPORT_DATA;
         extern const char* IMPORT_EXPORT_PATH;
         extern const char* IP_WHITELIST;
-        extern const char* HORIZON_HI;
-        extern const char* HORIZON_LO;
+		extern const char* FAST_SYNC;
 		extern const char* GENERATE_RECOVERY_PATH;
 		extern const char* RECOVERY_AUTO_PATH;
 		extern const char* RECOVERY_AUTO_PERIOD;
@@ -129,7 +127,6 @@ namespace beam
         extern const char* SWAP_AMOUNT;
         extern const char* SWAP_FEERATE;
         extern const char* SWAP_COIN;
-        extern const char* SWAP_NETWORK;
         extern const char* SWAP_BEAM_SIDE;
         extern const char* SWAP_TX_HISTORY;
         extern const char* NODE_POLL_PERIOD;

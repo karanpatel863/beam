@@ -13,11 +13,14 @@ namespace beamui
         Unknown
     };
 
+    QString toString(Currencies currency);
+    std::string toStdString(Currencies currency);
     QString toString(const beam::wallet::WalletID&);
     QString toString(const beam::Merkle::Hash&);
     QString AmountToString(const beam::Amount& value, Currencies coinType);
     QString toString(const beam::Timestamp& ts);
     double  Beam2Coins(const beam::Amount& value);
+    Currencies convertSwapCoinToCurrency(beam::wallet::AtomicSwapCoin coin);
 
     class Filter
     {
@@ -29,5 +32,8 @@ namespace beamui
     private:
         std::vector<double> _samples;
         size_t _index;
+        bool _is_poor;
     };
-}
+
+    QDateTime CalculateExpiresTime(beam::Height currentHeight, beam::Height expiresHeight);
+}  // namespace beamui

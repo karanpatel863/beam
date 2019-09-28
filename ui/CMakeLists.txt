@@ -1,27 +1,56 @@
+cmake_minimum_required(VERSION 3.11)
+
 set (TARGET_NAME "beam-wallet-ui")
 
 function(BEAM_TRANSLATIONS_UPDATE_TS supported_langs out_ts_files)
     find_package(Qt5LinguistTools)
+    if (Qt5LinguistTools_FOUND)
+        if(LINUX)
+            execute_process(COMMAND awk -F= "/^NAME/{print $2}" /etc/os-release 
+                            OUTPUT_VARIABLE DISTR_NAME
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
+        
     foreach(SUPPORTED_LANG ${supported_langs})
         set(TS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/i18n/${SUPPORTED_LANG}.ts")
         list(APPEND TS_FILES "${TS_FILE}")
         message("update: ${TS_FILE}")
-        execute_process(COMMAND lupdate -recursive -locations none ${CMAKE_CURRENT_SOURCE_DIR} -ts "${TS_FILE}")
+        if (DISTR_NAME AND ("${DISTR_NAME}" STREQUAL "Fedora"))
+            execute_process(COMMAND lupdate-qt5 -recursive -locations none ${CMAKE_CURRENT_SOURCE_DIR} -ts "${TS_FILE}")
+        else()
+            execute_process(COMMAND lupdate -recursive -locations none ${CMAKE_CURRENT_SOURCE_DIR} -ts "${TS_FILE}")
+        endif()
     endforeach()
     set(${out_ts_files} ${TS_FILES} PARENT_SCOPE)
+    else()
+        message("Qt5LinguistTools not found, please check your QT5 instalation")
+    endif()
 endfunction()
 
 function(BEAM_TRANSLATIONS_COMPILE_QM ts_files out_qm_files)
     find_package(Qt5LinguistTools)
+    if (Qt5LinguistTools_FOUND)
+        if(LINUX)
+            execute_process(COMMAND awk -F= "/^NAME/{print $2}" /etc/os-release
+                            OUTPUT_VARIABLE DISTR_NAME
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
     foreach(TS_FILE ${ts_files})
         message("compile: ${TS_FILE}")
         get_filename_component(TS_FILE_WE ${TS_FILE} NAME_WE)
         set(QM_FILE_NAME "${TS_FILE_WE}.qm")
         list(APPEND QM_FILES "${QM_FILE_NAME}")
-        execute_process(COMMAND lrelease -idbased "${TS_FILE}" -qm "${CMAKE_CURRENT_SOURCE_DIR}/${QM_FILE_NAME}")
+        if (DISTR_NAME AND ("${DISTR_NAME}" STREQUAL "Fedora"))
+            execute_process(COMMAND lrelease-qt5 -idbased "${TS_FILE}" -qm "${CMAKE_CURRENT_SOURCE_DIR}/${QM_FILE_NAME}")
+        else()
+            execute_process(COMMAND lrelease -idbased "${TS_FILE}" -qm "${CMAKE_CURRENT_SOURCE_DIR}/${QM_FILE_NAME}")
+        endif()
         message("compiled translation: ${CMAKE_CURRENT_SOURCE_DIR}/${QM_FILE_NAME}")
     endforeach()
     set(${out_qm_files} ${QM_FILES} PARENT_SCOPE)
+    else()
+        message("Qt5LinguistTools not found, please check your QT5 instalation")
+    endif()
 endfunction()
 
 set(APP_NAME "Beam Wallet${BEAM_DISPLAY_SUFFIX}")
@@ -71,6 +100,15 @@ list(APPEND SUPPORTED_LANGS "nl_NL")
 
 set(UI_SRC
     ui.cpp
+
+    viewmodel/helpers/list_model.h
+    viewmodel/helpers/sortfilterproxymodel.cpp
+    viewmodel/wallet/tx_object.cpp
+    viewmodel/wallet/transactions_list.cpp
+    viewmodel/wallet/wallet_view.cpp
+    viewmodel/swap_offers/swap_offer_item.cpp
+    viewmodel/swap_offers/swap_offers_list.cpp
+    viewmodel/swap_offers/swap_offers_view.cpp
     viewmodel/start_view.h
     viewmodel/start_view.cpp
     viewmodel/loading_view.h
@@ -83,8 +121,6 @@ set(UI_SRC
     viewmodel/main_view.cpp
     viewmodel/dashboard_view.h
     viewmodel/dashboard_view.cpp
-    viewmodel/wallet_view.h
-    viewmodel/wallet_view.cpp
     viewmodel/notifications_view.h
     viewmodel/notifications_view.cpp
     viewmodel/help_view.h
@@ -107,8 +143,6 @@ set(UI_SRC
     viewmodel/send_view.cpp
     viewmodel/status_holder.cpp
     viewmodel/status_holder.h
-    viewmodel/tx_object.h
-    viewmodel/tx_object.cpp
     viewmodel/payment_item.h
     viewmodel/payment_item.cpp
     viewmodel/qml_globals.h
@@ -118,12 +152,8 @@ set(UI_SRC
     viewmodel/currencies.h
     viewmodel/send_swap_view.h
     viewmodel/send_swap_view.cpp
-    viewmodel/swap_offer_item.cpp
-    viewmodel/swap_offers_list.cpp
-    viewmodel/swap_offers_view.cpp
-    viewmodel/helpers/list_model.h
-    viewmodel/helpers/sortfilterproxymodel.h
-    viewmodel/helpers/sortfilterproxymodel.cpp
+    viewmodel/el_seed_validator.h
+    viewmodel/el_seed_validator.cpp
 
     model/wallet_model.h
     model/wallet_model.cpp
@@ -142,8 +172,8 @@ set(UI_SRC
     model/helpers.h
     model/translator.cpp
     model/translator.h
-    model/bitcoin_client_model.cpp
-    model/bitcoin_client_model.h
+    model/swap_coin_client_model.cpp
+    model/swap_coin_client_model.h
 )
 
 beam_translations_update_ts("${SUPPORTED_LANGS}" TS_FILES)
@@ -200,6 +230,10 @@ endif()
 add_executable(${TARGET_NAME} ${SYSTEM_TYPE} ${UI_SRC} ${QT_RESOURCES} beam.rc ${MACOSX_BUNDLE_ICON_FILE})
 set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${OUTPUT_NAME})
 
+if(BEAM_ATOMIC_SWAP_SUPPORT)
+    target_compile_definitions(${TARGET_NAME} PRIVATE BEAM_ATOMIC_SWAP_SUPPORT)
+endif()
+
 if(BEAM_HW_WALLET)
     target_compile_definitions(${TARGET_NAME} PRIVATE BEAM_HW_WALLET)
 endif()
@@ -225,10 +259,25 @@ target_link_libraries(${TARGET_NAME} quazip_static)
 
 #if (BEAM_WALLET_WITH_NODE)
     add_definitions(-DBEAM_WALLET_WITH_NODE)
-    target_link_libraries(${TARGET_NAME} node external_pow)
+    target_link_libraries(${TARGET_NAME}
+            node 
+            external_pow
+    )
 #endif()
 
-target_link_libraries(${TARGET_NAME} wallet swap mnemonic Qt5::Qml Qt5::Quick Qt5::Svg Qt5::PrintSupport)
+target_link_libraries(${TARGET_NAME}
+        wallet
+        swap
+        mnemonic 
+        Qt5::Qml
+        Qt5::Quick 
+        Qt5::Svg
+        Qt5::PrintSupport
+)
+
+if (BEAM_ATOMIC_SWAP_SUPPORT)
+    target_link_libraries(${TARGET_NAME} swap)
+endif()
 
 if (BEAM_SIGN_PACKAGE AND WIN32)
     add_custom_command(

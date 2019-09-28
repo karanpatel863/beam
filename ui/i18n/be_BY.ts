@@ -155,11 +155,11 @@
     </message>
     <message id="general-restore-or-create-wallet">
         <source>Restore wallet or create a new one</source>
-        <translation>Аднавіць кашалёк або стварыць новы</translation>
+        <translation>Аднавіць гаманец альбо стварыць новы</translation>
     </message>
     <message id="general-select-db">
         <source>Select the wallet database file</source>
-        <translation>Выбраць файл базы дадзеных кашалька</translation>
+        <translation>Выбраць файл базы дадзеных гаманца</translation>
     </message>
     <message id="general-restore-wallet">
         <source>Restore wallet</source>
@@ -171,7 +171,7 @@
     </message>
     <message id="general-open-wallet">
         <source>Open my wallet</source>
-        <translation>Адкрыць кашалёк</translation>
+        <translation>Адкрыць мой гаманец</translation>
     </message>
     <message id="general-proceed">
         <source>Proceed</source>
@@ -184,7 +184,6 @@
     </message>
     <message id="general-addr-comment-error">
         <source>Address with the same comment already exists</source>
-        <oldsource>Address with same comment already exist</oldsource>
         <translation type="unfinished">Адрас з такой назвай ужо існуе</translation>
     </message>
     <message id="wallet-receive-button">
@@ -193,7 +192,7 @@
     </message>
     <message id="wallet-in-progress-title">
         <source>In progress</source>
-        <translation>Выконваецца</translation>
+        <translation type="vanished">Выконваецца</translation>
     </message>
     <message id="wallet-transactions-title">
         <source>Transactions</source>
@@ -204,12 +203,12 @@
         <translation>Праверыць плацёж</translation>
     </message>
     <message id="wallet-txs-date-time">
-        <source>Date | Time</source>
-        <translation>Дата | Час</translation>
+        <source>Created on</source>
+        <translation type="unfinished">Дата | Час</translation>
     </message>
     <message id="wallet-txs-copy-addr-cm">
         <source>Copy address</source>
-        <translation>Капіяваць адрас</translation>
+        <translation type="vanished">Капіяваць адрас</translation>
     </message>
     <message id="wallet-txs-delete-message">
         <source>The transaction will be deleted. This operation can not be undone</source>
@@ -249,7 +248,7 @@
     </message>
     <message id="wallet-txs-status-failed">
         <source>failed</source>
-        <translation>памылка</translation>
+        <translation>няўдалая</translation>
     </message>
     <message id="wallet-txs-status-unknown">
         <source>unknown</source>
@@ -265,7 +264,7 @@
     </message>
     <message id="addresses-tab-expired">
         <source>My expired addresses</source>
-        <translation>Пратэрмінаваныя</translation>
+        <translation>Мае пратэрмінаваныя адрасы</translation>
     </message>
     <message id="addresses-tab-contacts">
         <source>Contacts</source>
@@ -296,7 +295,7 @@
     </message>
     <message id="available-panel-where-to-buy">
         <source>Where to buy BEAM?</source>
-        <translation>Дзе купіць BEAM?</translation>
+        <translation type="vanished">Дзе купіць BEAM?</translation>
     </message>
     <message id="settings-version">
         <source>Version</source>
@@ -336,7 +335,7 @@
     <message id="settings-general-require-pwd-to-spend">
         <source>Ask password for every sending transaction</source>
         <extracomment>settings tab, general section, ask password to send label</extracomment>
-        <translation>Пытаць пароль для кожнай выходнаяй транзакцыі</translation>
+        <translation>Пытаць пароль для кожнай выходнай транзакцыі</translation>
     </message>
     <message id="settings-report-problem-title">
         <source>Report problem</source>
@@ -346,7 +345,7 @@
     <message id="settings-wallet-location-label">
         <source>Wallet folder location</source>
         <extracomment>settings tab, general section, wallet data folder location label</extracomment>
-        <translation>Тэчка дадзеных</translation>
+        <translation>Тэчка дадзеных гаманца</translation>
     </message>
     <message id="settings-apply">
         <source>Apply</source>
@@ -367,7 +366,7 @@
     </message>
     <message id="change-pwd-confirm-empty">
         <source>Please, confirm new password</source>
-        <translation>Калі ласка, увядзіце пацвярджэнне новага пароля</translation>
+        <translation>Калі ласка, пацвердзiце новы пароль</translation>
     </message>
     <message id="change-pwd-new-same-as-old">
         <source>New password cannot be the same as old</source>
@@ -375,7 +374,7 @@
     </message>
     <message id="change-pwd-confirm-fail">
         <source>New password doesn&apos;t match the confirm password</source>
-        <translation>Няправільнае пацвярджэнне новага паролю</translation>
+        <translation>Новы пароль не супадае з пацвярдженнем</translation>
     </message>
     <message id="change-pwd-old-fail">
         <source>The old password you have entered is incorrect</source>
@@ -399,15 +398,15 @@
     </message>
     <message id="loading-loading">
         <source>Loading wallet...</source>
-        <translation>Загрузка кашалька...</translation>
+        <translation>Загрузка гаманца...</translation>
     </message>
     <message id="loading-restoring">
         <source>Restoring wallet...</source>
-        <translation>Аднаўленне кашалька...</translation>
+        <translation>Аднаўленне гаманца...</translation>
     </message>
     <message id="loading-creating">
         <source>Creating wallet...</source>
-        <translation>Стварэнне кашалька...</translation>
+        <translation>Стварэнне гаманца...</translation>
     </message>
     <message id="start-open-pwd-invitation">
         <source>Enter your password to access the wallet</source>
@@ -415,7 +414,7 @@
     </message>
     <message id="open-show-wallet-button">
         <source>Show my wallet</source>
-        <translation>Адкрыць кашалёк</translation>
+        <translation>Адкрыць гаманец</translation>
     </message>
     <message id="edit-addr-title">
         <source>Edit address</source>
@@ -524,7 +523,6 @@
     </message>
     <message id="settings-title">
         <source>Settings</source>
-        <extracomment>settings tab title</extracomment>
         <translation>Усталёўкі</translation>
     </message>
     <message id="cant-send-to-expired-message">
@@ -545,21 +543,18 @@
     </message>
     <message id="wallet-title">
         <source>Wallet</source>
-        <translation>Кашалёк</translation>
+        <translation>Гаманец</translation>
     </message>
     <message id="wallet-receive-title">
         <source>Receive</source>
-        <oldsource>Receive Beam</oldsource>
         <translation type="unfinished">Атрымаць Beam</translation>
     </message>
     <message id="wallet-receive-my-addr-label">
         <source>My address (auto-generated)</source>
-        <oldsource>My address</oldsource>
         <translation type="unfinished">Мой адрас</translation>
     </message>
     <message id="wallet-receive-expires-label">
         <source>Expires in</source>
-        <oldsource>Expires</oldsource>
         <translation type="unfinished">Сапраўдны да</translation>
     </message>
     <message id="wallet-receive-expires-24">
@@ -584,17 +579,14 @@
     </message>
     <message id="send-title">
         <source>Send</source>
-        <oldsource>Send Beam</oldsource>
         <translation type="unfinished">Адправіць Beam</translation>
     </message>
     <message id="send-send-to-label">
         <source>Transaction token or contact</source>
-        <oldsource>Send To</oldsource>
         <translation type="unfinished">Атрымальнік</translation>
     </message>
     <message id="send-contact-placeholder">
         <source>Please specify contact or transaction token</source>
-        <oldsource>Please specify contact</oldsource>
         <translation type="unfinished">Пазначце адрас атрымальніка</translation>
     </message>
     <message id="send-amount-label">
@@ -808,12 +800,12 @@
         <translation>Немагчыма запусціць праграмму. Праверце пуць да дадзеных кашалька</translation>
     </message>
     <message id="loading-view-download-blocks">
-        <source>Downloading blocks</source>
-        <translation>Загрузка блокаў</translation>
+        <source>Synching with blockchain</source>
+        <translation>Сінхранізацыя з блокчэйнам</translation>
     </message>
     <message id="loading-view-scaning-utxo">
-        <source>Scanning UTXO %d/%d</source>
-        <translation>Сканаванне UTXO %d/%d</translation>
+        <source>Loading wallet data %d/%d</source>
+        <translation>Загрузка дадзеных гаманца %d/%d</translation>
     </message>
     <message id="loading-view-protocol-error">
         <source>Incompatible peer</source>
@@ -1030,7 +1022,12 @@
     </message>
     <message id="start-create-pwd-strength-message">
         <source>Strong password needs to meet the following requirements:\n•  the length must be at least 10 characters\n•  must contain at least one lowercase letter\n•  must contain at least one uppercase letter\n•  must contain at least one number</source>
-        <translation>Добры пароль павінен адпавядаць наступным патрабаванням:\n•  даўжыня мінімум 10 сімвалаў\n•  змяшчае хаця б адну маленькую літару\n•  змяшчае хаця б адну вялікую літару\n•  змяшчае хаця б адну лічбу</translation>
+        <oldsource>Strong password needs to meet the following requirements:
+•  the length must be at least 10 characters
+•  must contain at least one lowercase letter
+•  must contain at least one uppercase letter
+•  must contain at least one number</oldsource>
+        <translation type="unfinished">Добры пароль павінен адпавядаць наступным патрабаванням:\n•  даўжыня мінімум 10 сімвалаў\n•  змяшчае хаця б адну маленькую літару\n•  змяшчае хаця б адну вялікую літару\n•  змяшчае хаця б адну лічбу</translation>
     </message>
     <message id="start-open-caps-warning">
         <source>Caps lock is on!</source>
@@ -1187,7 +1184,7 @@
     </message>
     <message id="restore-finish-alert-button">
         <source>I understand</source>
-        <translation>Мне зразумела</translation>
+        <translation>Ясна</translation>
     </message>
     <message id="restore-finish-alert-title">
         <source>Do not simultaneously run two wallets initiated from the same seed phrase</source>
@@ -1289,64 +1286,18 @@
         <source>Default fee</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="offer-book-title">
-        <source>Offer Book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-create">
-        <source>Create an offer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-title-2">
-        <source>Active offers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-coins">
-        <source>Coins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-all-tab">
-        <source>All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-mine-tab">
-        <source>Mine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-others-tab">
-        <source>Others</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-time-created">
-        <source>Date | time</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message id="offer-book-amount">
         <source>Amount</source>
-        <translation type="unfinished">Колькасць</translation>
+        <translation type="obsolete">Колькасць</translation>
     </message>
     <message id="offer-book-amount-swap">
         <source>Amount</source>
-        <translation type="unfinished">Колькасць</translation>
-    </message>
-    <message id="offer-book-rate">
-        <source>Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-expiration">
-        <source>Expiration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-cancel">
-        <source>Cancel offer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-accept">
-        <source>Accept offer</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Колькасць</translation>
     </message>
     <message id="swap-na-message">
         <source>You do not have any 3rd-party currencies connected.\nUpdate your settings and try again.</source>
+        <oldsource>You do not have any 3rd-party currencies connected.
+Update your settings and try again.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message id="wallet-receive-swap-title">
@@ -1427,6 +1378,8 @@
     </message>
     <message id="swap-currency-na-message">
         <source>You do not have %1 connected.\nUpdate your settings and try again.</source>
+        <oldsource>You do not have %1 connected.
+Update your settings and try again.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message id="send-swap-to-label">
@@ -1434,7 +1387,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message id="send-not-enough">
-        <source>There is not enough funds to completer the transaction</source>
+        <source>There is not enough funds to complete the transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message id="wallet-send-swap-offered-label">
@@ -1453,12 +1406,254 @@
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="general-amount-sent">
+    <message id="loading-view-estimate-calculating">
+        <source>calculating...</source>
+        <translation>вылічаецца...</translation>
+    </message>
+    <message id="loading-view-rebuild-utxos">
+        <source>Rebuilding wallet data</source>
+        <translation>Перабудаванне дадзенных гаманца</translation>
+    </message>
+    <message id="loading-view-estimate-hours">
+        <source>h.</source>
+        <translation>гадз.</translation>
+    </message>
+    <message id="loading-view-net-problems">
+        <source>It may take longer then usual. Please, check your network.</source>
+        <translation>Можа патрабаватца больш часу чым заўсёды. Каліласка, праверце далучэнне да интэрнэта.</translation>
+    </message>
+    <message id="atomic-swap-title">
+        <source>Atomic Swap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-create">
+        <source>Create offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-active-offers-tab">
+        <source>Active offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-transactions-tab">
+        <source>Transactions</source>
+        <translation type="unfinished">Транзакцыі</translation>
+    </message>
+    <message id="atomic-swap-receive-beam">
+        <source>Receive BEAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-send-beam">
+        <source>Send BEAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-only-my-offers">
+        <source>Only my offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-fit-current-balance">
+        <source>Fit my current balance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-currency">
+        <source>Currency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-time-created">
+        <source>Created on</source>
+        <translation type="unfinished">Дата | Час</translation>
+    </message>
+    <message id="atomic-swap-amount-send">
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-amount-receive">
+        <source>Receive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-rate">
+        <source>Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-expiration">
+        <source>Expiration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-cancel">
+        <source>Cancel offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-accept">
+        <source>Accept offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-all-transactions-tab">
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-in-progress-transactions-tab">
+        <source>In progress</source>
+        <translation type="unfinished">Выконваецца</translation>
+    </message>
+    <message id="atomic-swap-tx-table-created">
+        <source>Created on</source>
+        <translation type="unfinished">Дата | Час</translation>
+    </message>
+    <message id="atomic-swap-tx-table-from">
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-to">
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-sent">
         <source>Sent</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="general-amount-received">
+    <message id="atomic-swap-tx-table-received">
         <source>Received</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-status">
+        <source>Status</source>
+        <translation type="unfinished">Стан</translation>
+    </message>
+    <message id="general-create-trezor-wallet">
+        <source>Create new Trezor wallet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-text-online-time">
+        <source>For the transaction to complete, you should get online during the 12 hours after Beams are sent.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="send-confirmation-pwd-text-online-time">
+        <source>For the transaction to complete, the recipient must get online within the next 12 hours and you should get online within 2 hours afterwards.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="trezor-message">
+        <source>Please, look at your Trezor device to complete actions...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-init-wallet-with-trezor">
+        <source>Init wallet with Trezor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-found-trezor-device">
+        <source>Found device:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-no-trezor-device-connected">
+        <source>There is no device connected, please, connect your hardware wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-import-trezor-owner-key">
+        <source>Import Trezor Owner Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-owner-key-imported">
+        <source>Owner Key imported. Please, enter the password you saw on device to decrypt your Owner Key.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-look-at-trezor-to-complete-actions">
+        <source>Please, look at your Trezor to complete actions...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-copy-token">
+        <source>copy transaction token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-connect-other">
+        <source>Connect other currency wallet to start trading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-model-device-not-connected">
+        <source>There is no Trezor device connected. Please, connect and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-button">
+        <source>I understand</source>
+        <translation type="unfinished">Ясна</translation>
+    </message>
+    <message id="swap-beta-message">
+        <source>Atomic Swap functionality is Beta at the moment. We recommend you not to send large amounts.</source>
+        <oldsource>Atomic Swap functionality is Beta at the moment. We recommend
+you do not send large amounts.</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-title">
+        <source>Atomic Swap is in BETA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-connection-error">
+        <source>Cannot connect to peer. Please check in the address in settings and retry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-locked">
+        <source>Locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-sending">
+        <source>Sending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-receiving">
+        <source>Receiving</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-maturing">
+        <source>Maturing</source>
+        <translation type="unfinished">Спее</translation>
+    </message>
+    <message id="available-panel-change">
+        <source>Change</source>
+        <translation type="unfinished">Рэшта</translation>
+    </message>
+    <message id="available-panel-incoming">
+        <source>Incoming</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-active-tx-count">
+        <source>%1 active transactions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-1active-tx-count">
+        <source>1 active transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-tx-in-progress">
+        <source>Transaction is in progress</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-electrum">
+        <source>Electrum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-new-seed">
+        <source>Double click to generate new seed phrase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-invalid-seed">
+        <source>Invalid seed phrase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-transactions-all-tab">
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-transactions-in-progress-tab">
+        <source>In progress</source>
+        <translation type="unfinished">Выконваецца</translation>
+    </message>
+    <message id="wallet-transactions-sent-tab">
+        <source>Sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-transactions-received-tab">
+        <source>Received</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-see-seed">
+        <source>Click to see seed phrase</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

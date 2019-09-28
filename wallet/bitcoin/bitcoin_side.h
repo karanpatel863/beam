@@ -28,12 +28,15 @@ namespace beam::wallet
     {
     public:
         BitcoinSide(BaseTransaction& tx, bitcoin::IBridge::Ptr bitcoinBridge, bitcoin::ISettingsProvider::Ptr settingsProvider, bool isBeamSide);
+        virtual ~BitcoinSide();
 
         bool Initialize() override;
         bool InitLockTime() override;
         bool ValidateLockTime() override;
         void AddTxDetails(SetTxParameter& txParameters) override;
         bool ConfirmLockTx() override;
+        bool ConfirmRefundTx() override;
+        bool ConfirmRedeemTx() override;
         bool SendLockTx() override;
         bool SendRefund() override;
         bool SendRedeem() override;
@@ -50,7 +53,6 @@ namespace beam::wallet
         Amount GetFeeRate(SubTxID subTxID) const;
         uint16_t GetTxMinConfirmations() const;
         uint32_t GetLockTimeInBlocks() const;
-        bool IsMainnet() const;
 
     private:
         bool LoadSwapAddress();
@@ -59,6 +61,8 @@ namespace beam::wallet
         SwapTxState BuildLockTx();
         SwapTxState BuildWithdrawTx(SubTxID subTxID);
         void GetSwapLockTxConfirmations();
+        void GetRefundTxConfirmations();
+        void GetRedeemTxConfirmations();
         bool SendWithdrawTx(SubTxID subTxID);
         uint64_t GetBlockCount(bool notify = false);
         std::string GetWithdrawAddress() const;
@@ -80,6 +84,8 @@ namespace beam::wallet
         uint64_t m_blockCount = 0;
 
         uint32_t m_SwapLockTxConfirmations = 0;
+        uint32_t m_RefundTxConfirmations = 0;
+        uint32_t m_RedeemTxConfirmations = 0;
         boost::optional<std::string> m_SwapLockRawTx;
         boost::optional<std::string> m_SwapWithdrawRawTx;
     };

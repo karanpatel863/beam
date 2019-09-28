@@ -41,7 +41,6 @@ class NodeProcessor
 
 	void RollbackTo(Height);
 	Height PruneOld();
-	Height RaiseFossil(Height);
 	Height RaiseTxoLo(Height);
 	Height RaiseTxoHi(Height);
 	void Vacuum();
@@ -52,22 +51,22 @@ class NodeProcessor
 	bool HandleTreasury(const Blob&);
 
 	bool HandleBlock(const NodeDB::StateID&, MultiblockContext&);
-	bool HandleValidatedTx(TxBase::IReader&&, Height, bool bFwd, const Height* = NULL);
-	bool HandleValidatedBlock(TxBase::IReader&&, const Block::BodyBase&, Height, bool bFwd, const Height* = NULL);
-	bool HandleBlockElement(const Input&, Height, const Height*, bool bFwd);
-	bool HandleBlockElement(const Output&, Height, const Height*, bool bFwd);
+	bool HandleValidatedTx(TxBase::IReader&&, Height, bool bFwd);
+	bool HandleValidatedBlock(TxBase::IReader&&, const Block::BodyBase&, Height, bool bFwd);
+	bool HandleBlockElement(const Input&, Height, bool bFwd);
+	bool HandleBlockElement(const Output&, Height, bool bFwd);
 
-	bool ImportMacroBlockInternal(Block::BodyBase::IMacroReader&);
-	void RecognizeUtxos(TxBase::IReader&&, Height hMax);
+	void RecognizeUtxos(TxBase::IReader&&, Height h);
 
-	static void SquashOnce(std::vector<Block::Body>&);
-	static uint64_t ProcessKrnMmr(Merkle::Mmr&, TxBase::IReader&&, Height, const Merkle::Hash& idKrn, TxKernel::Ptr* ppRes);
+	static uint64_t ProcessKrnMmr(Merkle::Mmr&, TxBase::IReader&&, const Merkle::Hash& idKrn, TxKernel::Ptr* ppRes);
 
 	static const uint32_t s_TxoNakedMin = sizeof(ECC::Point); // minimal output size - commitment
 	static const uint32_t s_TxoNakedMax = s_TxoNakedMin + 0x10; // In case the output has the Incubation period - extra size is needed (actually less than this).
 
 	static void TxoToNaked(uint8_t* pBuf, Blob&);
 	static bool TxoIsNaked(const Blob&);
+
+	void ToInputWithMaturity(Input&, TxoID);
 
 	TxoID get_TxosBefore(Height);
 	void AdjustOffset(ECC::Scalar&, uint64_t rowid, bool bAdd);
@@ -81,7 +80,7 @@ class NodeProcessor
 	typedef std::pair<int64_t, std::pair<int64_t, Difficulty::Raw> > THW; // Time-Height-Work. Time and Height are signed
 	Difficulty get_NextDifficulty();
 	Timestamp get_MovingMedian();
-	void get_MovingMedianEx(uint64_t rowLast, uint32_t nWindow, THW&);
+	void get_MovingMedianEx(Height, uint32_t nWindow, THW&);
 
 	struct CongestionCache
 	{
@@ -108,6 +107,27 @@ class NodeProcessor
 
 	CongestionCache::TipCongestion* EnumCongestionsInternal();
 
+	struct RecentStates
+	{
+		struct Entry
+		{
+			uint64_t m_RowID;
+			Block::SystemState::Full m_State;
+		};
+
+		std::vector<Entry> m_vec;
+		// cyclic buffer
+		size_t m_i0 = 0;
+		size_t m_Count = 0;
+
+		Entry& get_FromTail(size_t) const;
+
+		const Entry* Get(Height) const;
+		void RollbackTo(Height);
+		void Push(uint64_t rowID, const Block::SystemState::Full&);
+
+	} m_RecentStates;
+
 	void DeleteBlocksInRange(const NodeDB::StateID& sidTop, Height hStop);
 
 public:
@@ -126,15 +146,25 @@ public:
 
 	struct Horizon {
 
-		Height m_Branching; // branches behind this are pruned
-		Height m_SchwarzschildLo; // spent behind this are completely erased
-		Height m_SchwarzschildHi; // spent behind this are compacted
+		// branches behind this are pruned
+		Height m_Branching;
 
-		Horizon(); // by default both are disabled.
+		struct m_Schwarzschild {
+			Height Lo; // spent behind this are completely erased
+			Height Hi; // spent behind this are compacted
+		};
+
+		m_Schwarzschild m_Sync; // how deep to sync
+		m_Schwarzschild m_Local; // how deep to keep
+
+		void SetInfinite();
+		void SetStdFastSync(); // Hi is minimum, Lo is 180 days
+
+		void Normalize(); // make sure parameters are consistent w.r.t. each other and MaxRollback
+
+		Horizon(); // by default all horizons are disabled, i.e. full archieve.
 
 	} m_Horizon;
-
-	void OnHorizonChanged();
 
 	struct Cursor
 	{
@@ -153,8 +183,6 @@ public:
 		TxoID m_TxosTreasury;
 		TxoID m_Txos; // total num of ever created TXOs, including treasury
 
-		Height m_LoHorizon; // lowest accessible height
-		Height m_Fossil; // from here and down - no original blocks
 		Height m_TxoLo;
 		Height m_TxoHi;
 
@@ -174,11 +202,7 @@ public:
 	void SaveSyncData();
 	void LogSyncData();
 
-	// Export compressed history elements. Suitable only for "small" ranges, otherwise may be both time & memory consumng.
 	void ExtractBlockWithExtra(Block::Body&, const NodeDB::StateID&);
-	void ExportMacroBlock(Block::BodyBase::IMacroWriter&, const HeightRange&);
-	void ExportHdrRange(const HeightRange&, Block::SystemState::Sequence::Prefix&, std::vector<Block::SystemState::Sequence::Element>&);
-	bool ImportMacroBlock(Block::BodyBase::IMacroReader&);
 
 	struct DataStatus {
 		enum Enum {
@@ -192,7 +216,7 @@ public:
 	bool IsTreasuryHandled() const { return m_Extra.m_TxosTreasury > 0; }
 
 	DataStatus::Enum OnState(const Block::SystemState::Full&, const PeerID&);
-	DataStatus::Enum OnStateSilent(const Block::SystemState::Full&, const PeerID&, Block::SystemState::ID&);
+	DataStatus::Enum OnStateSilent(const Block::SystemState::Full&, const PeerID&, Block::SystemState::ID&, bool bAlreadyChecked);
 	DataStatus::Enum OnBlock(const Block::SystemState::ID&, const Blob& bbP, const Blob& bbE, const PeerID&);
 	DataStatus::Enum OnBlock(const NodeDB::StateID&, const Blob& bbP, const Blob& bbE, const PeerID&);
 	DataStatus::Enum OnTreasury(const Blob&);
@@ -209,13 +233,17 @@ public:
 	const uint64_t* get_CachedRows(const NodeDB::StateID&, Height nCountExtra); // retval valid till next call to this func, or to EnumCongestions()
 	void TryGoUp();
 
+	// Lowest height to which it's possible to rollback.
+	Height get_LowestReturnHeight() const;
+
 	static bool IsRemoteTipNeeded(const Block::SystemState::Full& sTipRemote, const Block::SystemState::Full& sTipMy);
 
-	virtual void RequestData(const Block::SystemState::ID&, bool bBlock, const PeerID* pPreferredPeer, const NodeDB::StateID& sidTrg) {}
+	virtual void RequestData(const Block::SystemState::ID&, bool bBlock, const NodeDB::StateID& sidTrg) {}
 	virtual void OnPeerInsane(const PeerID&) {}
 	virtual void OnNewState() {}
 	virtual void OnRolledBack() {}
 	virtual void OnModified() {}
+	virtual void InitializeUtxosProgress(uint64_t done, uint64_t total) {}
 
 	// parallel context-free execution
 	struct Task
@@ -244,7 +272,7 @@ public:
 	};
 	virtual bool EnumViewerKeys(IKeyWalker&) { return true; }
 
-	bool Recover(Key::IDV&, const Output&, Height hMax);
+	bool Recover(Key::IDV&, const Output&, Height h);
 
 	void RescanOwnedTxos();
 
@@ -286,7 +314,7 @@ public:
 
 	bool GenerateNewBlock(BlockContext&);
 
-	bool GetBlock(const NodeDB::StateID&, ByteBuffer* pEthernal, ByteBuffer* pPerishable, Height h0, Height hLo1, Height hHi1);
+	bool GetBlock(const NodeDB::StateID&, ByteBuffer* pEthernal, ByteBuffer* pPerishable, Height h0, Height hLo1, Height hHi1, bool bActive);
 
 	struct ITxoWalker
 	{
@@ -329,7 +357,7 @@ public:
 	};
 #pragma pack (pop)
 
-	virtual void OnUtxoEvent(const UtxoEvent::Value&) {}
+	virtual void OnUtxoEvent(const UtxoEvent::Value&, Height) {}
 	virtual void OnDummy(const Key::ID&, Height) {}
 
 	static bool IsDummy(const Key::IDV&);
@@ -337,7 +365,7 @@ public:
 private:
 	size_t GenerateNewBlockInternal(BlockContext&);
 	void GenerateNewHdr(BlockContext&);
-	DataStatus::Enum OnStateInternal(const Block::SystemState::Full&, Block::SystemState::ID&);
+	DataStatus::Enum OnStateInternal(const Block::SystemState::Full&, Block::SystemState::ID&, bool bAlreadyChecked);
 };
 
 struct LogSid

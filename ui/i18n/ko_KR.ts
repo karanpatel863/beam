@@ -25,7 +25,7 @@
     </message>
     <message id="general-actions">
         <source>Actions</source>
-        <translation type="unfinished">Actions</translation>
+        <translation>작업</translation>
     </message>
     <message id="general-address">
         <source>Address</source>
@@ -139,7 +139,7 @@
     <message id="general-treasury">
         <source>Treasury</source>
         <extracomment>UTXO type Treasury</extracomment>
-        <translation type="unfinished">Treasury</translation>
+        <translation>Treausry</translation>
     </message>
     <message id="general-back">
         <source>Back</source>
@@ -184,7 +184,6 @@
     </message>
     <message id="general-addr-comment-error">
         <source>Address with the same comment already exists</source>
-        <oldsource>Address with same comment already exist</oldsource>
         <translation type="unfinished">동일한 메모가 있는 주소가 이미 존재합니다</translation>
     </message>
     <message id="wallet-receive-button">
@@ -193,7 +192,7 @@
     </message>
     <message id="wallet-in-progress-title">
         <source>In progress</source>
-        <translation>진행중</translation>
+        <translation type="vanished">진행중</translation>
     </message>
     <message id="wallet-transactions-title">
         <source>Transactions</source>
@@ -204,12 +203,12 @@
         <translation>지불 증명</translation>
     </message>
     <message id="wallet-txs-date-time">
-        <source>Date | Time</source>
-        <translation>날짜 | 시간</translation>
+        <source>Created on</source>
+        <translation type="unfinished">날짜 | 시간</translation>
     </message>
     <message id="wallet-txs-copy-addr-cm">
         <source>Copy address</source>
-        <translation>주소 복사</translation>
+        <translation type="vanished">주소 복사</translation>
     </message>
     <message id="wallet-txs-delete-message">
         <source>The transaction will be deleted. This operation can not be undone</source>
@@ -296,7 +295,7 @@
     </message>
     <message id="available-panel-where-to-buy">
         <source>Where to buy BEAM?</source>
-        <translation>BEAM 은 어디서 사나요?</translation>
+        <translation type="vanished">BEAM 은 어디서 사나요?</translation>
     </message>
     <message id="settings-version">
         <source>Version</source>
@@ -524,7 +523,6 @@
     </message>
     <message id="settings-title">
         <source>Settings</source>
-        <extracomment>settings tab title</extracomment>
         <translation>설정</translation>
     </message>
     <message id="cant-send-to-expired-message">
@@ -549,17 +547,14 @@
     </message>
     <message id="wallet-receive-title">
         <source>Receive</source>
-        <oldsource>Receive Beam</oldsource>
         <translation type="unfinished">Beam 받기</translation>
     </message>
     <message id="wallet-receive-my-addr-label">
         <source>My address (auto-generated)</source>
-        <oldsource>My address</oldsource>
         <translation type="unfinished">내 주소</translation>
     </message>
     <message id="wallet-receive-expires-label">
         <source>Expires in</source>
-        <oldsource>Expires</oldsource>
         <translation type="unfinished">만료</translation>
     </message>
     <message id="wallet-receive-expires-24">
@@ -584,17 +579,14 @@
     </message>
     <message id="send-title">
         <source>Send</source>
-        <oldsource>Send Beam</oldsource>
         <translation type="unfinished">Beam 보내기</translation>
     </message>
     <message id="send-send-to-label">
         <source>Transaction token or contact</source>
-        <oldsource>Send To</oldsource>
         <translation type="unfinished">보내기</translation>
     </message>
     <message id="send-contact-placeholder">
         <source>Please specify contact or transaction token</source>
-        <oldsource>Please specify contact</oldsource>
         <translation type="unfinished">연락처를 명확히 하십시오</translation>
     </message>
     <message id="send-amount-label">
@@ -808,12 +800,14 @@
         <translation>지갑을 실행하지 못했습니다. 지갑 데이터 위치를 확인하십시오</translation>
     </message>
     <message id="loading-view-download-blocks">
-        <source>Downloading blocks</source>
-        <translation>블록 다운로딩중</translation>
+        <source>Synching with blockchain</source>
+        <oldsource>Downloading new blocks</oldsource>
+        <translation type="unfinished">블록 다운로딩중</translation>
     </message>
     <message id="loading-view-scaning-utxo">
-        <source>Scanning UTXO %d/%d</source>
-        <translation>UTXO %d/%d 스캔하는중</translation>
+        <source>Loading wallet data %d/%d</source>
+        <oldsource>Locating your funds %d/%d</oldsource>
+        <translation type="unfinished">UTXO %d/%d 스캔하는중</translation>
     </message>
     <message id="loading-view-protocol-error">
         <source>Incompatible peer</source>
@@ -1030,7 +1024,12 @@
     </message>
     <message id="start-create-pwd-strength-message">
         <source>Strong password needs to meet the following requirements:\n•  the length must be at least 10 characters\n•  must contain at least one lowercase letter\n•  must contain at least one uppercase letter\n•  must contain at least one number</source>
-        <translation>보안성이 강한 비밀번호를 만들기 위해서는 아래의 조건들을 충족시켜야 합니다 : \n• 최소한 10개의 글자로 이루어져야합니다.\n• 최소한 1개의 소문자가 포함되어야 합니다.\n• 최소한 1개의 대문자가 포함되어야 합니다.\n• 최소한 1개의 숫자가 포함되어야 합니다.</translation>
+        <oldsource>Strong password needs to meet the following requirements:
+•  the length must be at least 10 characters
+•  must contain at least one lowercase letter
+•  must contain at least one uppercase letter
+•  must contain at least one number</oldsource>
+        <translation type="unfinished">보안성이 강한 비밀번호를 만들기 위해서는 아래의 조건들을 충족시켜야 합니다 : \n• 최소한 10개의 글자로 이루어져야합니다.\n• 최소한 1개의 소문자가 포함되어야 합니다.\n• 최소한 1개의 대문자가 포함되어야 합니다.\n• 최소한 1개의 숫자가 포함되어야 합니다.</translation>
     </message>
     <message id="start-open-caps-warning">
         <source>Caps lock is on!</source>
@@ -1183,71 +1182,167 @@
     </message>
     <message id="open-in-explorer">
         <source>Open in Blockchain Explorer</source>
-        <translation type="unfinished"></translation>
+        <translation>블록체인 탐색기에서 열기</translation>
     </message>
     <message id="restore-finish-alert-button">
         <source>I understand</source>
-        <translation type="unfinished">이해합니다</translation>
+        <translation>이해합니다</translation>
     </message>
     <message id="restore-finish-alert-title">
         <source>Do not simultaneously run two wallets initiated from the same seed phrase</source>
-        <translation type="unfinished"></translation>
+        <translation>같은 시드 구문으로 생성된 2개의 다른 지갑을 같이 실행하지 마십시오</translation>
     </message>
     <message id="restore-finish-alert-message-line">
         <source>Don’t use same seed phrase on several devices, your balance and transaction list won’t be synchronized.</source>
-        <translation type="unfinished"></translation>
+        <translation>같은 시드 구문을 여러 기기에서 사용하지 마십시오, 당신의 잔고와 거래 내역은 동기화되지 않습니다.</translation>
     </message>
     <message id="tx-failture-subtx-failed">
         <source>Subtransaction has failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Subtransaction 이 실패했습니다.</translation>
     </message>
     <message id="tx-failture-invalid-contract-amount">
         <source>Contract&apos;s amount is not valid</source>
-        <translation type="unfinished"></translation>
+        <translation>계약&apos;s 금액이 유효하지 않음</translation>
     </message>
     <message id="tx-failture-invalid-sidechain-contract">
         <source>Side chain has invalid contract</source>
-        <translation type="unfinished"></translation>
+        <translation>사이드 체인이 유효하지 않은 연락처를 가지고 있습니다.</translation>
     </message>
     <message id="tx-failture-sidechain-internal-error">
         <source>Side chain bridge has internal error</source>
-        <translation type="unfinished"></translation>
+        <translation>사이드 체인 브릿지 내부에 에러가 있습니다.</translation>
     </message>
     <message id="tx-failture-sidechain-network-error">
         <source>Side chain bridge has network error</source>
-        <translation type="unfinished"></translation>
+        <translation>사이드 체인 브릿지 네트워크에 에러가 있습니다.</translation>
     </message>
     <message id="tx-failture-invalid-sidechain-response-format">
         <source>Side chain bridge has response format error</source>
-        <translation type="unfinished"></translation>
+        <translation>사이드 체인 브릿지 반응 포맷 에러가 있습니다.</translation>
     </message>
     <message id="tx-failture-invalid-side-chain-credentials">
         <source>Invalid credentials of Side chain</source>
-        <translation type="unfinished"></translation>
+        <translation>유효하지 않은 사이드 체인 증명</translation>
     </message>
     <message id="tx-failture-not-enough-time-btc-lock">
         <source>Not enough time to finish btc lock transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>BTC 잠금 거래 완료에 시간이 충분하지 않음</translation>
     </message>
     <message id="tx-failture-create-multisig">
         <source>Failed to create multi-signature</source>
-        <translation type="unfinished"></translation>
+        <translation>다중 서명 생성 실패</translation>
     </message>
     <message id="tx-failture-fee-too-small">
         <source>Fee is too small</source>
-        <translation type="unfinished"></translation>
+        <translation>수수료가 너무 작습니다.</translation>
     </message>
     <message id="loading-view-estimate-minutes">
         <source>min.</source>
-        <translation type="unfinished"></translation>
+        <translation>뷴</translation>
     </message>
     <message id="loading-view-estimate-seconds">
         <source>sec.</source>
-        <translation type="unfinished"></translation>
+        <translation>초</translation>
     </message>
     <message id="loading-view-estimate-time">
         <source>Estimate time: %s</source>
+        <translation>예상 소요시간: %s</translation>
+    </message>
+    <message id="atomic-swap-title">
+        <source>Atomic Swap</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-create">
+        <source>Create offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-active-offers-tab">
+        <source>Active offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-transactions-tab">
+        <source>Transactions</source>
+        <translation type="unfinished">거래내역</translation>
+    </message>
+    <message id="atomic-swap-receive-beam">
+        <source>Receive BEAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-send-beam">
+        <source>Send BEAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-only-my-offers">
+        <source>Only my offers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-fit-current-balance">
+        <source>Fit my current balance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-currency">
+        <source>Currency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-time-created">
+        <source>Created on</source>
+        <translation type="unfinished">날짜 | 시간</translation>
+    </message>
+    <message id="atomic-swap-amount-send">
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-amount-receive">
+        <source>Receive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-rate">
+        <source>Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-expiration">
+        <source>Expiration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-cancel">
+        <source>Cancel offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-accept">
+        <source>Accept offer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-all-transactions-tab">
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-in-progress-transactions-tab">
+        <source>In progress</source>
+        <translation type="unfinished">진행중</translation>
+    </message>
+    <message id="atomic-swap-tx-table-created">
+        <source>Created on</source>
+        <translation type="unfinished">날짜 | 시간</translation>
+    </message>
+    <message id="atomic-swap-tx-table-from">
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-to">
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-sent">
+        <source>Sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-received">
+        <source>Received</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-tx-table-status">
+        <source>Status</source>
+        <translation type="unfinished">상태</translation>
     </message>
     <message id="general-fee-rate">
         <source>Transaction fee rate</source>
@@ -1289,64 +1384,14 @@
         <source>Default fee</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="offer-book-title">
-        <source>Offer Book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-create">
-        <source>Create an offer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-title-2">
-        <source>Active offers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-coins">
-        <source>Coins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-all-tab">
-        <source>All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-mine-tab">
-        <source>Mine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-others-tab">
-        <source>Others</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-time-created">
-        <source>Date | time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-amount">
-        <source>Amount</source>
-        <translation type="unfinished">양</translation>
-    </message>
-    <message id="offer-book-amount-swap">
-        <source>Amount</source>
-        <translation type="unfinished">양</translation>
-    </message>
-    <message id="offer-book-rate">
-        <source>Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-expiration">
-        <source>Expiration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-cancel">
-        <source>Cancel offer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="offer-book-accept">
-        <source>Accept offer</source>
+    <message id="trezor-message">
+        <source>Please, look at your Trezor device to complete actions...</source>
         <translation type="unfinished"></translation>
     </message>
     <message id="swap-na-message">
         <source>You do not have any 3rd-party currencies connected.\nUpdate your settings and try again.</source>
+        <oldsource>You do not have any 3rd-party currencies connected.
+Update your settings and try again.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message id="wallet-receive-swap-title">
@@ -1355,6 +1400,10 @@
     </message>
     <message id="wallet-receive-addr-message">
         <source>Send this address to the sender over an external secure channel or scan the QR code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-text-online-time">
+        <source>For the transaction to complete, you should get online during the 12 hours after Beams are sent.</source>
         <translation type="unfinished"></translation>
     </message>
     <message id="wallet-receive-copy-address">
@@ -1405,6 +1454,10 @@
         <source>Invalid address or token</source>
         <translation type="unfinished"></translation>
     </message>
+    <message id="send-confirmation-pwd-text-online-time">
+        <source>For the transaction to complete, the recipient must get online within the next 12 hours and you should get online within 2 hours afterwards.</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message id="general-comment-local">
         <source>Comments are local and won&apos;t be shared</source>
         <translation type="unfinished"></translation>
@@ -1427,6 +1480,8 @@
     </message>
     <message id="swap-currency-na-message">
         <source>You do not have %1 connected.\nUpdate your settings and try again.</source>
+        <oldsource>You do not have %1 connected.
+Update your settings and try again.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message id="send-swap-to-label">
@@ -1434,7 +1489,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message id="send-not-enough">
-        <source>There is not enough funds to completer the transaction</source>
+        <source>There is not enough funds to complete the transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message id="wallet-send-swap-offered-label">
@@ -1445,6 +1500,34 @@
         <source>Expires on</source>
         <translation type="unfinished"></translation>
     </message>
+    <message id="general-create-trezor-wallet">
+        <source>Create new Trezor wallet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-init-wallet-with-trezor">
+        <source>Init wallet with Trezor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-found-trezor-device">
+        <source>Found device:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-no-trezor-device-connected">
+        <source>There is no device connected, please, connect your hardware wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-import-trezor-owner-key">
+        <source>Import Trezor Owner Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-owner-key-imported">
+        <source>Owner Key imported. Please, enter the password you saw on device to decrypt your Owner Key.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="start-look-at-trezor-to-complete-actions">
+        <source>Please, look at your Trezor to complete actions...</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message id="general-address-from">
         <source>From</source>
         <translation type="unfinished"></translation>
@@ -1453,12 +1536,119 @@
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="general-amount-sent">
+    <message id="loading-view-estimate-hours">
+        <source>h.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-estimate-calculating">
+        <source>calculating...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-net-problems">
+        <source>It may take longer then usual. Please, check your network.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="loading-view-rebuild-utxos">
+        <source>Rebuilding wallet data</source>
+        <oldsource>Rebuilding data</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-receive-copy-token">
+        <source>copy transaction token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-connect-other">
+        <source>Connect other currency wallet to start trading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-model-device-not-connected">
+        <source>There is no Trezor device connected. Please, connect and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-button">
+        <source>I understand</source>
+        <translation type="unfinished">이해합니다</translation>
+    </message>
+    <message id="swap-beta-message">
+        <source>Atomic Swap functionality is Beta at the moment. We recommend you not to send large amounts.</source>
+        <oldsource>Atomic Swap functionality is Beta at the moment. We recommend
+you do not send large amounts.</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-title">
+        <source>Atomic Swap is in BETA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-connection-error">
+        <source>Cannot connect to peer. Please check in the address in settings and retry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-locked">
+        <source>Locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-sending">
+        <source>Sending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-receiving">
+        <source>Receiving</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="available-panel-maturing">
+        <source>Maturing</source>
+        <translation type="unfinished">형성중</translation>
+    </message>
+    <message id="available-panel-change">
+        <source>Change</source>
+        <translation type="unfinished">잔액</translation>
+    </message>
+    <message id="available-panel-incoming">
+        <source>Incoming</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-active-tx-count">
+        <source>%1 active transactions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="atomic-swap-1active-tx-count">
+        <source>1 active transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="swap-beta-tx-in-progress">
+        <source>Transaction is in progress</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="general-electrum">
+        <source>Electrum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-new-seed">
+        <source>Double click to generate new seed phrase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-invalid-seed">
+        <source>Invalid seed phrase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-transactions-all-tab">
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="wallet-transactions-in-progress-tab">
+        <source>In progress</source>
+        <translation type="unfinished">진행중</translation>
+    </message>
+    <message id="wallet-transactions-sent-tab">
         <source>Sent</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="general-amount-received">
+    <message id="wallet-transactions-received-tab">
         <source>Received</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="settings-see-seed">
+        <source>Click to see seed phrase</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -18,13 +18,23 @@
 
 namespace beam::bitcoin
 {
-    uint8_t getAddressVersion(bool isMainnet)
+    uint8_t getAddressVersion()
     {
-        if (isMainnet)
-        {
-            return libbitcoin::wallet::ec_private::mainnet_p2kh;
-        }
+#ifdef BEAM_MAINNET
+        return libbitcoin::wallet::ec_private::mainnet_p2kh;
+#else
 
         return libbitcoin::wallet::ec_private::testnet_p2kh;
+#endif
+    }
+
+    bool validateElectrumMnemonic(const std::vector<std::string>& words)
+    {
+        return libbitcoin::wallet::electrum::validate_mnemonic(words);
+    }
+
+    std::vector<std::string> createElectrumMnemonic(const std::vector<uint8_t>& entropy)
+    {
+        return libbitcoin::wallet::electrum::create_mnemonic(entropy);
     }
 } // namespace beam::bitcoin

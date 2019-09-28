@@ -966,6 +966,17 @@ namespace beam::wallet
         }
     }
 
+    void WalletDB::createTables(sqlite3* db, sqlite3* privateDb)
+    {
+        CreateStorageTable(db);
+        CreateWalletMessageTable(db);
+        CreatePrivateVariablesTable(privateDb);
+        CreateVariablesTable(db);
+        CreateAddressesTable(db);
+        CreateTxParamsTable(db);
+        CreateStatesTable(db);
+    }
+
     IWalletDB::Ptr WalletDB::init(const string& path, const SecString& password, const ECC::NoLeak<ECC::uintBig>& secretKey, io::Reactor::Ptr reactor, bool separateDBForPrivateData)
     {
         if (!isInitialized(path))
@@ -988,13 +999,7 @@ namespace beam::wallet
             enterKey(db, password);
             auto walletDB = make_shared<WalletDB>(db, secretKey, reactor, sdb);
 
-            CreateStorageTable(walletDB->_db);
-            CreateWalletMessageTable(walletDB->_db);
-            CreatePrivateVariablesTable(walletDB->m_PrivateDB);
-            CreateVariablesTable(walletDB->_db);
-            CreateAddressesTable(walletDB->_db);
-            CreateTxParamsTable(walletDB->_db);
-            CreateStatesTable(walletDB->_db);
+            createTables(walletDB->_db, walletDB->m_PrivateDB);
 
             {
                 // store master key
@@ -1027,7 +1032,47 @@ namespace beam::wallet
         return Ptr();
     }
 
-    IWalletDB::Ptr WalletDB::open(const string& path, const SecString& password, io::Reactor::Ptr reactor)
+#if defined(BEAM_HW_WALLET)
+    IWalletDB::Ptr WalletDB::initWithTrezor(const string& path, std::shared_ptr<ECC::HKdfPub> ownerKey, const SecString& password, io::Reactor::Ptr reactor)
+    {
+        if (!isInitialized(path))
+        {
+            sqlite3* db = nullptr;
+            {
+                int ret = sqlite3_open_v2(path.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+                throwIfError(ret, db);
+            }
+
+            enterKey(db, password);
+            auto walletDB = make_shared<WalletDB>(db, reactor);
+
+            createTables(walletDB->_db, walletDB->m_PrivateDB);
+
+            {
+                // store owner key (public)
+                {
+                    ECC::NoLeak<ECC::HKdfPub::Packed> packedOwnerKey;
+                    ownerKey->Export(packedOwnerKey.V);
+
+                    storage::setVar(*walletDB, OwnerKey, packedOwnerKey.V);
+                    walletDB->m_OwnerKdf = ownerKey;
+                }
+
+                storage::setVar(*walletDB, Version, DbVersion);
+            }
+
+            walletDB->flushDB();
+
+            return static_pointer_cast<IWalletDB>(walletDB);
+        }
+
+        LOG_ERROR() << path << " already exists.";
+
+        return Ptr();
+    }
+#endif
+
+    IWalletDB::Ptr WalletDB::open(const string& path, const SecString& password, io::Reactor::Ptr reactor, bool useTrezor)
     {
         try
         {
@@ -1271,6 +1316,7 @@ namespace beam::wallet
                     }
                 }
 
+                walletDB->m_useTrezor = useTrezor;
                 return static_pointer_cast<IWalletDB>(walletDB);
             }
 
@@ -1281,6 +1327,12 @@ namespace beam::wallet
         }
 
         return Ptr();
+    }
+
+    WalletDB::WalletDB(sqlite3* db, io::Reactor::Ptr reactor)
+        : WalletDB(db, reactor, db)
+    {
+
     }
 
     WalletDB::WalletDB(sqlite3* db, io::Reactor::Ptr reactor, sqlite3* sdb)
@@ -1327,7 +1379,7 @@ namespace beam::wallet
 
     Key::IKdf::Ptr WalletDB::get_MasterKdf() const
     {
-        return m_pKdf;
+        return m_useTrezor ? nullptr : m_pKdf;
     }
 
 	Key::IKdf::Ptr IWalletDB::get_ChildKdf(const Key::IDV& kidv) const
@@ -2417,7 +2469,7 @@ namespace beam::wallet
         Block::SystemState::Full s;
         if (m_History.get_Tip(s))
         {
-            const Height hMaxBacklog = Rules::get().Macroblock.MaxRollback * 2; // can actually be more
+            const Height hMaxBacklog = Rules::get().MaxRollback * 2; // can actually be more
 
             if (s.m_Height > hMaxBacklog)
             {
@@ -2749,7 +2801,20 @@ namespace beam::wallet
                     Unspent += v;
                     break;
 
-                case Coin::Status::Incoming: Incoming += v; break;
+                case Coin::Status::Incoming:
+                {
+                    Incoming += v;
+                    if (c.m_ID.m_Type == Key::Type::Change)
+                    {
+                        ReceivingChange += v;
+                    }
+                    else
+                    {
+                        ReceivingIncoming += v;
+                    }
+
+                    break;
+                }
                 case Coin::Status::Outgoing: Outgoing += v; break;
                 case Coin::Status::Unavailable: Unavail += v; break;
 

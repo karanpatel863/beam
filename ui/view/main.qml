@@ -13,11 +13,29 @@ Rectangle {
 
 	MainViewModel {id: viewModel}
 
+    property color topColor: Style.background_main_top
+    property color topGradientColor: Qt.rgba(Style.background_main_top.r, Style.background_main_top.g, Style.background_main_top.b, 0)
+
     StatusbarViewModel {
         id: statusbarModel
     }
 
-    color: Style.background_main
+    property alias backgroundRect: mainBackground
+    Rectangle {
+        id: mainBackground
+        anchors.fill: parent
+        color: Style.background_main
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 230
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: main.topColor }
+                GradientStop { position: 1.0; color: main.topGradientColor }
+            }
+        }
+    }
 
     MouseArea {
         id: mainMouseArea
@@ -36,7 +54,7 @@ Rectangle {
     property var contentItems : [
 		//"dashboard",
 		"wallet", 
-        "offer_book",
+        "atomic_swap",
 		"addresses", 
 		"utxo",
 		//"notification", 
@@ -44,16 +62,20 @@ Rectangle {
 		"settings"]
     property int selectedItem
 
-    Rectangle {
+    Item {
         id: sidebar
         width: 70
         height: 0
-        color: Style.navigation_background
-        border.width: 0
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.top: parent.top
 
+        Rectangle {
+            anchors.fill: parent
+            color: Style.navigation_background
+            opacity: 0.1
+            border.width: 0
+        }
 
         Column {
             width: 0
@@ -63,17 +85,18 @@ Rectangle {
             anchors.left: parent.left
             anchors.leftMargin: 0
             anchors.top: parent.top
-            anchors.topMargin: 125
+            anchors.topMargin: 130
 
             Repeater{
+                id: controls
                 model: contentItems
 
                 Item {
                     id: control
                     width: parent.width
-                    height: parent.width
+                    height: 66
                     activeFocusOnTab: true
-                    
+
                     SvgImage {
 						id: icon
                         x: 21
@@ -135,8 +158,8 @@ Rectangle {
         id: content
         anchors.topMargin: 50
         anchors.bottomMargin: 0
-        anchors.rightMargin: 30
-        anchors.leftMargin: 100
+        anchors.rightMargin: 20
+        anchors.leftMargin: 90
         anchors.fill: parent
         focus: true
     }
@@ -145,6 +168,7 @@ Rectangle {
     {
         var update = function(index) {
             selectedItem = index
+            controls.itemAt(index).focus = true;
             content.setSource("qrc:/" + contentItems[index] + ".qml", Object.assign({"toSend": false}, props))
             viewModel.update(index)
         }
@@ -173,14 +197,37 @@ Rectangle {
         viewModel.resetLockTimer();
     }
 
+    property var trezor_popup
+
     Connections {
         target: viewModel
         onGotoStartScreen: { 
             main.parent.setSource("qrc:/start.qml", {"isLockedMode": true});
+        }
+
+        onShowTrezorMessage:{
+            trezor_popup = Qt.createComponent("popup_message.qml").createObject(main)
+
+            //% "Please, look at your Trezor device to complete actions..."
+            trezor_popup.message = qsTrId("trezor-message")
+            trezor_popup.open()
+        }
+
+        onHideTrezorMessage:{
+            trezor_popup.close()
+        }
+
+        onShowTrezorError: function(error) {
+            console.log(error)
+            trezor_popup = Qt.createComponent("popup_message.qml").createObject(main)
+            trezor_popup.message = error
+            trezor_popup.open()
+
         }
     }
 
     Component.onCompleted: {
         updateItem("wallet")
     }
+
 }

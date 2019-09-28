@@ -59,6 +59,23 @@ class SettingsViewModel : public QObject
     Q_PROPERTY(QString  qtumNodeAddress READ getQtumNodeAddress  WRITE setQtumNodeAddress  NOTIFY qtumNodeAddressChanged)
     Q_PROPERTY(int      qtumFeeRate     READ getQtumFeeRate      WRITE setQtumFeeRate      NOTIFY qtumFeeRateChanged)
 
+    Q_PROPERTY(QString  btcSeedEL        READ getBtcSeedEL         WRITE setBtcSeedEL         NOTIFY btcSeedELChanged)
+    Q_PROPERTY(QString  btcNodeAddressEL READ getBtcNodeAddressEL  WRITE setBtcNodeAddressEL  NOTIFY btcNodeAddressELChanged)
+    Q_PROPERTY(int      btcFeeRateEL     READ getBtcFeeRateEL      WRITE setBtcFeeRateEL      NOTIFY btcFeeRateELChanged)
+
+    Q_PROPERTY(QString  ltcSeedEL        READ getLtcSeedEL         WRITE setLtcSeedEL         NOTIFY ltcSeedELChanged)
+    Q_PROPERTY(QString  ltcNodeAddressEL READ getLtcNodeAddressEL  WRITE setLtcNodeAddressEL  NOTIFY ltcNodeAddressELChanged)
+    Q_PROPERTY(int      ltcFeeRateEL     READ getLtcFeeRateEL      WRITE setLtcFeeRateEL      NOTIFY ltcFeeRateELChanged)
+
+    Q_PROPERTY(QString  qtumSeedEL        READ getQtumSeedEL         WRITE setQtumSeedEL         NOTIFY qtumSeedELChanged)
+    Q_PROPERTY(QString  qtumNodeAddressEL READ getQtumNodeAddressEL  WRITE setQtumNodeAddressEL  NOTIFY qtumNodeAddressELChanged)
+    Q_PROPERTY(int      qtumFeeRateEL     READ getQtumFeeRateEL      WRITE setQtumFeeRateEL      NOTIFY qtumFeeRateELChanged)
+
+     Q_PROPERTY(bool btcUseEL   READ getBtcUseEL    WRITE setBtcUseEL    NOTIFY btcUseELChanged)
+     Q_PROPERTY(bool ltcUseEL   READ getLtcUseEL    WRITE setLtcUseEL    NOTIFY ltcUseELChanged)
+     Q_PROPERTY(bool qtumUseEL  READ getQtumUseEL   WRITE setQtumUseEL   NOTIFY qtumUseELChanged)
+
+
 public:
 
     SettingsViewModel();
@@ -108,14 +125,35 @@ public:
     int getLtcFeeRate() const;
     void setLtcFeeRate(int value);
 
-    QString getQtumUser() const;
-    void setQtumUser(const QString& value);
-    QString getQtumPass() const;
-    void setQtumPass(const QString& value);
-    QString getQtumNodeAddress() const;
-    void setQtumNodeAddress(const QString& value);
-    int getQtumFeeRate() const;
-    void setQtumFeeRate(int value);
+    QString getBtcSeedEL() const;
+    void setBtcSeedEL(const QString& value);
+    QString getBtcNodeAddressEL() const;
+    void setBtcNodeAddressEL(const QString& value);
+    int getBtcFeeRateEL() const;
+    void setBtcFeeRateEL(int value);
+
+    QString getLtcSeedEL() const;
+    void setLtcSeedEL(const QString& value);
+    QString getLtcNodeAddressEL() const;
+    void setLtcNodeAddressEL(const QString& value);
+    int getLtcFeeRateEL() const;
+    void setLtcFeeRateEL(int value);
+
+    QString getQtumSeedEL() const;
+    void setQtumSeedEL(const QString& value);
+    QString getQtumNodeAddressEL() const;
+    void setQtumNodeAddressEL(const QString& value);
+    int getQtumFeeRateEL() const;
+    void setQtumFeeRateEL(int value);
+
+    bool getBtcUseEL() const;
+    void setBtcUseEL(bool value);
+
+    bool getLtcUseEL() const;
+    void setLtcUseEL(bool value);
+
+    bool getQtumUseEL() const;
+    void setQtumUseEL(bool value);
 
     Q_INVOKABLE uint coreAmount() const;
     Q_INVOKABLE void addLocalNodePeer(const QString& localNodePeer);
@@ -127,10 +165,29 @@ public:
     Q_INVOKABLE void applyBtcSettings();
     Q_INVOKABLE void applyLtcSettings();
     Q_INVOKABLE void applyQtumSettings();
+    Q_INVOKABLE void applyBtcSettingsEL();
+    Q_INVOKABLE void applyLtcSettingsEL();
+    Q_INVOKABLE void applyQtumSettingsEL();
 
     Q_INVOKABLE void btcOff();
     Q_INVOKABLE void ltcOff();
     Q_INVOKABLE void qtumOff();
+    Q_INVOKABLE void btcOffEL();
+    Q_INVOKABLE void ltcOffEL();
+    Q_INVOKABLE void qtumOffEL();
+
+    Q_INVOKABLE void btcNewSeedEL();
+    Q_INVOKABLE void ltcNewSeedEL();
+    Q_INVOKABLE void qtumNewSeedEL();
+
+    QString getQtumUser() const;
+    void setQtumUser(const QString& value);
+    QString getQtumPass() const;
+    void setQtumPass(const QString& value);
+    QString getQtumNodeAddress() const;
+    void setQtumNodeAddress(const QString& value);
+    int getQtumFeeRate() const;
+    void setQtumFeeRate(int value);
 
 public slots:
     void applyChanges();
@@ -159,6 +216,18 @@ signals:
     void btcNodeAddressChanged();
     void btcFeeRateChanged();
 
+    void btcSeedELChanged();
+    void btcNodeAddressELChanged();
+    void btcFeeRateELChanged();
+
+    void ltcSeedELChanged();
+    void ltcNodeAddressELChanged();
+    void ltcFeeRateELChanged();
+
+    void qtumSeedELChanged();
+    void qtumNodeAddressELChanged();
+    void qtumFeeRateELChanged();
+
     void ltcUserChanged();
     void ltcPassChanged();
     void ltcNodeAddressChanged();
@@ -169,6 +238,10 @@ signals:
     void qtumNodeAddressChanged();
     void qtumFeeRateChanged();
 
+    void btcUseELChanged();
+    void ltcUseELChanged();
+    void qtumUseELChanged();
+
 protected:
     void timerEvent(QTimerEvent *event) override;
 
@@ -176,6 +249,13 @@ private:
     void LoadBitcoinSettings();
     void LoadLitecoinSettings();
     void LoadQtumSettings();
+
+    void SetDefaultBtcSettings();
+    void SetDefaultBtcSettingsEL();
+    void SetDefaultLtcSettings();
+    void SetDefaultLtcSettingsEL();
+    void SetDefaultQtumSettings();
+    void SetDefaultQtumSettingsEL();
 
     WalletSettings& m_settings;
 
@@ -199,17 +279,33 @@ private:
     QString m_bitcoinNodeAddress;
     int m_bitcoinFeeRate = 0;
 
+    QString m_bitcoinSeedEl;
+    QString m_bitcoinNodeAddressEl;
+    int m_bitcoinFeeRateEl = 0;
+
     boost::optional<beam::bitcoin::Settings> m_litecoinSettings;
     QString m_litecoinUser;
     QString m_litecoinPass;
     QString m_litecoinNodeAddress;
     int m_litecoinFeeRate = 0;
 
+    QString m_litecoinSeedEl;
+    QString m_litecoinNodeAddressEl;
+    int m_litecoinFeeRateEl = 0;
+
     boost::optional<beam::bitcoin::Settings> m_qtumSettings;
     QString m_qtumUser;
     QString m_qtumPass;
     QString m_qtumNodeAddress;
     int m_qtumFeeRate = 0;
+
+    QString m_qtumSeedEl;
+    QString m_qtumNodeAddressEl;
+    int m_qtumFeeRateEl = 0;
+
+    bool m_btcUseEL = false;
+    bool m_ltcUseEL = false;
+    bool m_qtumUseEL = false;
 
     const int CHECK_INTERVAL = 1000;
 };

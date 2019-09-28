@@ -14,7 +14,7 @@
 #pragma once
 
 #include "wallet_model.h"
-#include "bitcoin_client_model.h"
+#include "swap_coin_client_model.h"
 #include "settings.h"
 #include "messages.h"
 #include "node_model.h"
@@ -33,6 +33,11 @@ public:
     ~AppModel() override;
 
     bool createWallet(const beam::SecString& seed, const beam::SecString& pass);
+
+#if defined(BEAM_HW_WALLET)
+    bool createTrezorWallet(std::shared_ptr<ECC::HKdfPub> ownerKey, const beam::SecString& pass);
+#endif
+
     bool openWallet(const beam::SecString& pass);
     bool checkWalletPassword(const beam::SecString& pass) const;
     void changeWalletPassword(const std::string& pass);
@@ -45,28 +50,36 @@ public:
     WalletSettings& getSettings() const;
     MessageManager& getMessages();
     NodeModel& getNode();
-    BitcoinClientModel::Ptr getBitcoinClient() const;
-    BitcoinClientModel::Ptr getLitecoinClient() const;
-    BitcoinClientModel::Ptr getQtumClient() const;
+    SwapCoinClientModel::Ptr getBitcoinClient() const;
+    SwapCoinClientModel::Ptr getLitecoinClient() const;
+    SwapCoinClientModel::Ptr getQtumClient() const;
 
 public slots:
     void onStartedNode();
     void onFailedToStartNode(beam::wallet::ErrorType errorCode);
+    void onResetWallet();
 
 signals:
-    void walletReseted();
+    void walletReset();
+    void walletResetCompleted();
 
 private:
     void start();
     void startNode();
     void startWallet();
-    void resetWalletImpl();
     void InitBtcClient();
     void InitLtcClient();
     void InitQtumClient();
     void onWalledOpened(const beam::SecString& pass);
+    void backupDB(const std::string& dbFilePath);
+    void generateDefaultAddress();
 
 private:
+    // SwapCoinClientModels must be destroyed after WalletModel
+    SwapCoinClientModel::Ptr m_bitcoinClient;
+    SwapCoinClientModel::Ptr m_litecoinClient;
+    SwapCoinClientModel::Ptr m_qtumClient;
+
     WalletModel::Ptr m_wallet;
     beam::wallet::IPrivateKeyKeeper::Ptr m_keyKeeper;
     NodeModel m_nodeModel;
@@ -75,9 +88,7 @@ private:
     ECC::NoLeak<ECC::uintBig> m_passwordHash;
     beam::io::Reactor::Ptr m_walletReactor;
     beam::wallet::IWalletDB::Ptr m_db;
-    Connections m_nsc; // [n]ode [s]tarting [c]connections
+    Connections m_nsc; // [n]ode [s]tarting [c]onnections
+    Connections m_walletConnections;
     static AppModel* s_instance;
-    BitcoinClientModel::Ptr m_bitcoinClient;
-    BitcoinClientModel::Ptr m_litecoinClient;
-    BitcoinClientModel::Ptr m_qtumClient;
 };

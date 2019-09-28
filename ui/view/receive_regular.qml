@@ -15,9 +15,12 @@ ColumnLayout {
         id: viewModel
         onNewAddressFailed: {
             walletView.enabled = true
-            Qt.createComponent("receive_addrfail.qml")
-                .createObject(sendView)
-                .open();
+            var popup = Qt.createComponent("popup_message.qml")
+                .createObject(thisView)
+
+            //% "You cannot generate new address. Your wallet doesn't have a master key."
+            popup.message = qsTrId("can-not-generate-new-address-message")
+            popup.open()
         }
     }
 
@@ -227,6 +230,21 @@ ColumnLayout {
         text: qsTrId("wallet-receive-addr-message")
     }
 
+    SFText {
+        Layout.alignment:      Qt.AlignHCenter
+        Layout.preferredWidth: 470
+        Layout.maximumHeight:  40
+        Layout.topMargin:      30
+        font.pixelSize:        14
+        color:                 Style.content_disabled
+        wrapMode:              Text.WordWrap
+        horizontalAlignment:   Text.AlignHCenter
+        leftPadding:           15
+        rightPadding:          15
+        //% "For the transaction to complete, you should get online during the 12 hours after Beams are sent."
+        text: qsTrId("wallet-receive-text-online-time")
+    }
+
     Row {
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: 30
@@ -237,7 +255,9 @@ ColumnLayout {
             text:               qsTrId("general-close")
             palette.buttonText: Style.content_main
             icon.source:        "qrc:/assets/icon-cancel-white.svg"
-            onClicked:          walletView.pop();
+            onClicked:          {
+                thisView.parent.parent.pop();
+            }
         }
 
         CustomButton {

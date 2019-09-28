@@ -17,6 +17,8 @@
 #include "wallet/swaps/common.h"
 #include "ui_helpers.h"
 
+Q_DECLARE_METATYPE(beam::wallet::TxParameters)
+
 SendSwapViewModel::SendSwapViewModel()
     : _sendAmount(0)
     , _sendFee(0)
@@ -29,11 +31,22 @@ SendSwapViewModel::SendSwapViewModel()
 {
     LOG_INFO() << "SendSwapViewModel created";
     connect(&_walletModel, &WalletModel::changeCalculated,  this,  &SendSwapViewModel::onChangeCalculated);
-    //connect(&_walletModel, &WalletModel::sendMoneyVerified,      this,  &SendViewModel::onSendMoneyVerified);
-    //connect(&_walletModel, &WalletModel::cantSendToExpired,      this,  &SendViewModel::onCantSendToExpired);
 
     _status.setOnChanged([this]() {
         recalcAvailable();
+
+        if (!_expiresTime.isValid())
+        {
+            auto peerResponseTime = _txParameters.GetParameter<beam::Height>(beam::wallet::TxParameterID::PeerResponseTime);
+            auto minHeight = _txParameters.GetParameter<beam::Height>(beam::wallet::TxParameterID::MinHeight);
+            auto currentHeight = _status.getCurrentHeight();
+
+            if (currentHeight && minHeight && peerResponseTime)
+            {
+                auto expiresHeight = *minHeight + *peerResponseTime;
+                setExpiresTime(beamui::CalculateExpiresTime(currentHeight, expiresHeight));
+            }
+        }
     });
 
     _status.refresh();
@@ -78,10 +91,12 @@ void SendSwapViewModel::fillParameters(beam::wallet::TxParameters parameters)
     auto beamAmount = parameters.GetParameter<Amount>(TxParameterID::Amount);
     auto swapAmount = parameters.GetParameter<Amount>(TxParameterID::AtomicSwapAmount);
     auto peerID = parameters.GetParameter<WalletID>(TxParameterID::PeerID);
-    auto peerResponseHeight = parameters.GetParameter<Height>(TxParameterID::PeerResponseHeight);
+    auto peerResponseTime = parameters.GetParameter<Height>(TxParameterID::PeerResponseTime);
+    auto offeredTime = parameters.GetParameter<Timestamp>(TxParameterID::CreateTime);
+    auto minHeight = parameters.GetParameter<Height>(TxParameterID::MinHeight);
 
-    if (peerID && swapAmount && beamAmount
-        && swapCoin && isBeamSide && peerResponseHeight)
+    if (peerID && swapAmount && beamAmount && swapCoin && isBeamSide
+        && peerResponseTime && offeredTime && minHeight)
     {
         if (*isBeamSide) // other participant is not a beam side
         {
@@ -99,8 +114,14 @@ void SendSwapViewModel::fillParameters(beam::wallet::TxParameters parameters)
             setReceiveCurrency(Currency::CurrBeam);
             setReceiveAmount(double(*beamAmount) / Rules::Coin);
         }
-        setOfferedTime(QDateTime::currentDateTime()); // TODO:SWAP use peerResponseHeight
-        setExpiresTime(QDateTime::currentDateTime().addSecs(12*3600)); //
+        setOfferedTime(QDateTime::fromSecsSinceEpoch(*offeredTime));
+
+        auto currentHeight = _status.getCurrentHeight();
+        if (currentHeight)
+        {
+            auto expiresHeight = *minHeight + *peerResponseTime;
+            setExpiresTime(beamui::CalculateExpiresTime(currentHeight, expiresHeight));
+        }
         _txParameters = parameters;
     }
 }
@@ -375,5 +396,5 @@ void SendSwapViewModel::sendMoney()
     txParameters.SetParameter(beam::wallet::TxParameterID::Fee, beam::Amount(beamFee));
     txParameters.SetParameter(beam::wallet::TxParameterID::Fee, beam::Amount(swapFee), subTxID);
 
-    _walletModel.getAsync()->startTransaction(beam::wallet::TxParameters(txParameters));
+    _walletModel.getAsync()->startTransaction(std::move(txParameters));
 }

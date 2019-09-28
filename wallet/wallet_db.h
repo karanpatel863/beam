@@ -108,7 +108,8 @@ namespace beam::wallet
         {
             Expired = 0,
             OneDay,
-            Never
+            Never,
+            AsIs
         };
         void setLabel(const std::string& label);
         void setExpiration(ExpirationStatus status);
@@ -309,9 +310,13 @@ namespace beam::wallet
     {
     public:
         static bool isInitialized(const std::string& path);
+#if defined(BEAM_HW_WALLET)
+        static Ptr initWithTrezor(const std::string& path, std::shared_ptr<ECC::HKdfPub> ownerKey, const SecString& password, io::Reactor::Ptr reactor);
+#endif
         static Ptr init(const std::string& path, const SecString& password, const ECC::NoLeak<ECC::uintBig>& secretKey, io::Reactor::Ptr reactor, bool separateDBForPrivateData = false);
-        static Ptr open(const std::string& path, const SecString& password, io::Reactor::Ptr reactor);
+        static Ptr open(const std::string& path, const SecString& password, io::Reactor::Ptr reactor, bool useTrezor = false);
 
+        WalletDB(sqlite3* db, io::Reactor::Ptr reactor);
         WalletDB(sqlite3* db, io::Reactor::Ptr reactor, sqlite3* sdb);
         WalletDB(sqlite3* db, const ECC::NoLeak<ECC::uintBig>& secretKey, io::Reactor::Ptr reactor, sqlite3* sdb);
         ~WalletDB();
@@ -387,6 +392,7 @@ namespace beam::wallet
         void deleteIncomingWalletMessage(uint64_t id) override;
 
     private:
+        static void createTables(sqlite3* db, sqlite3* privateDb);
         void removeCoinImpl(const Coin::ID& cid);
         void notifyCoinsChanged();
         void notifyTransactionChanged(ChangeAction action, const std::vector<TxDescription>& items);
@@ -438,6 +444,8 @@ namespace beam::wallet
         
         mutable ParameterCache m_TxParametersCache;
         mutable std::map<WalletID, boost::optional<WalletAddress>> m_AddressesCache;
+
+        bool m_useTrezor = false;
     };
 
     namespace storage
@@ -524,6 +532,8 @@ namespace beam::wallet
             Amount Avail = 0;
             Amount Maturing = 0;
             Amount Incoming = 0;
+            Amount ReceivingIncoming = 0;
+            Amount ReceivingChange = 0;
             Amount Unavail = 0;
             Amount Outgoing = 0;
             Amount AvailCoinbase = 0;

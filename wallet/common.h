@@ -180,12 +180,12 @@ namespace beam::wallet
         PeerProtoVersion = 16,
         MaxHeight = 17,
 
+        PeerResponseTime = 24,
         SubTxIndex = 25,
         PeerPublicSharedBlindingFactor = 26,
 
         IsSelfTx = 27,
-       
-        AtomicSwapSecondSideChainType = 29,
+
         AtomicSwapIsBeamSide = 30,
         AtomicSwapCoin = 31,
         AtomicSwapAmount = 32,
@@ -258,6 +258,7 @@ namespace beam::wallet
         PreImage = 201,
         AtomicSwapSecretPrivateKey = 202,
         AtomicSwapSecretPublicKey = 203,
+        Confirmations = 204,
 
         InternalFailureReason = 210,
     
@@ -281,6 +282,7 @@ namespace beam::wallet
         template <typename T>
         boost::optional<T> GetParameter(TxParameterID parameterID, SubTxID subTxID = kDefaultSubTxID) const
         {
+            static_assert(std::is_same<T, ByteBuffer>::value == false);
             auto buffer = GetParameter(parameterID, subTxID);
             if (buffer && !buffer->empty())
             {
@@ -324,6 +326,7 @@ namespace beam::wallet
         template <typename T>
         TxParameters& SetParameter(TxParameterID parameterID, const T& value, SubTxID subTxID = kDefaultSubTxID)
         {
+            static_assert(std::is_same<T, ByteBuffer>::value == false);
             return SetParameter(parameterID, toByteBuffer(value), subTxID);
         }
 
@@ -444,15 +447,6 @@ namespace beam::wallet
 
     AtomicSwapCoin from_string(const std::string& value);
 
-    enum class SwapSecondSideChainType
-    {
-        Mainnet,
-        Testnet,
-        Unknown
-    };
-
-    SwapSecondSideChainType SwapSecondSideChainTypeFromString(const std::string& value);
-
     // messages
     struct SetTxParameter
     {
@@ -551,18 +545,32 @@ namespace beam::wallet
     ErrorType getWalletError(proto::NodeProcessingException::Type exceptionType);
     ErrorType getWalletError(io::ErrorCode errorCode);
 
-    struct PaymentConfirmation
+    struct ConfirmationBase
+    {
+        ECC::Signature m_Signature;
+        
+        virtual void get_Hash(ECC::Hash::Value&) const = 0;
+
+        bool IsValid(const PeerID&) const;
+        void Sign(const ECC::Scalar::Native& sk);
+    };
+
+    struct PaymentConfirmation : public ConfirmationBase
     {
         // I, the undersigned, being healthy in mind and body, hereby accept they payment specified below, that shall be delivered by the following kernel ID.
         Amount m_Value;
         ECC::Hash::Value m_KernelID;
         PeerID m_Sender;
-        ECC::Signature m_Signature;
 
-        void get_Hash(ECC::Hash::Value&) const;
-        bool IsValid(const PeerID&) const;
+        void get_Hash(ECC::Hash::Value&) const override;
+    };
+    
+    struct SwapOfferConfirmation : public ConfirmationBase
+    {
+        // Identifies owner for swap offer modification
+        ByteBuffer m_offerData;
 
-        void Sign(const ECC::Scalar::Native& sk);
+        void get_Hash(ECC::Hash::Value&) const override;
     };
 }
 
